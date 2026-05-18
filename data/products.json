@@ -1,222 +1,222 @@
 [
   {
     "id": "p01",
-    "name": "GiÃ y Run Lite chÃ­nh hÃ£ng",
-    "category": "GiÃ y dÃ©p",
+    "name": "Giày Run Lite chính hãng",
+    "category": "Giày dép",
     "price": 1290000,
     "rating": 4.8,
     "sold": 2400,
     "tag": "best",
     "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
-    "description": "GiÃ y cháº¡y nháº¹, Ä‘áº¿ Ãªm, phÃ¹ há»£p Ä‘i bá»™ vÃ  táº­p luyá»‡n."
+    "description": "Giày chạy nhẹ, để êm, phù hợp đi bộ và tập luyện."
   },
   {
     "id": "p02",
-    "name": "TÃºi City Tote laptop 14 inch",
-    "category": "TÃºi vÃ­",
+    "name": "Túi City Tote laptop 14 inch",
+    "category": "Túi ví",
     "price": 890000,
     "rating": 4.6,
     "sold": 1180,
     "tag": "new",
     "image": "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=600&q=80",
-    "description": "TÃºi tote Ä‘i lÃ m háº±ng ngÃ y, Ä‘á»§ chá»— cho laptop."
+    "description": "Túi tote đi làm hằng ngày, đủ chứa cho laptop."
   },
   {
     "id": "p03",
-    "name": "Äá»“ng há»“ Core dÃ¢y thÃ©p",
-    "category": "Phá»¥ kiá»‡n",
+    "name": "Đồng hồ Core dây thép",
+    "category": "Phụ kiện",
     "price": 1590000,
     "rating": 4.7,
     "sold": 860,
     "tag": "mall",
     "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-    "description": "Äá»“ng há»“ tá»‘i giáº£n vá»›i dÃ¢y thÃ©p bá»n nháº¹."
+    "description": "Đồng hồ tối giản với dây thép bón nhẹ."
   },
   {
     "id": "p04",
-    "name": "Ão Linen Daily form rá»™ng",
-    "category": "Thá»i trang nam",
+    "name": "Áo Linen Daily form rộng",
+    "category": "Thời trang nam",
     "price": 620000,
     "rating": 4.5,
     "sold": 3210,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80",
-    "description": "Ão linen thoÃ¡ng nháº¹ cho thá»i tiáº¿t nÃ³ng."
+    "description": "Áo linen thoáng nhẹ cho thời tiết nóng."
   },
   {
     "id": "p05",
-    "name": "Tai nghe Studio chá»‘ng á»“n",
-    "category": "Äiá»‡n tá»­",
+    "name": "Tai nghe Studio chống ồn",
+    "category": "Điện tử",
     "price": 2190000,
     "rating": 4.9,
     "sold": 730,
     "tag": "mall",
     "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-    "description": "Tai nghe over-ear cho lÃ m viá»‡c táº­p trung."
+    "description": "Tai nghe over-ear cho làm việc tập trung."
   },
   {
     "id": "p06",
-    "name": "Sneaker Urban da lá»™n",
-    "category": "GiÃ y dÃ©p",
+    "name": "Sneaker Urban da lộn",
+    "category": "Giày dép",
     "price": 1480000,
     "rating": 4.6,
     "sold": 1740,
     "tag": "new",
     "image": "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=600&q=80",
-    "description": "Sneaker phá»‘i mÃ u trung tÃ­nh dá»… Ä‘i."
+    "description": "Sneaker phối màu trung tính dễ đi."
   },
   {
     "id": "p07",
-    "name": "Ão khoÃ¡c Air chá»‘ng giÃ³",
-    "category": "Thá»i trang nam",
+    "name": "Áo khoác Air chống gió",
+    "category": "Thời trang nam",
     "price": 1350000,
     "rating": 4.4,
     "sold": 980,
     "tag": "new",
     "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80",
-    "description": "Ão khoÃ¡c nháº¹ cho ngÃ y di chuyá»ƒn nhiá»u."
+    "description": "Áo khoác nhẹ cho ngày di chuyển nhiều."
   },
   {
     "id": "p08",
-    "name": "VÃ­ Slim Card da má»m",
-    "category": "TÃºi vÃ­",
+    "name": "Ví Slim Card da mềm",
+    "category": "Túi ví",
     "price": 390000,
     "rating": 4.3,
     "sold": 4200,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80",
-    "description": "VÃ­ má»ng gá»n cho tháº» vÃ  tiá»n máº·t."
+    "description": "Ví mỏng gọn cho thẻ và tiền mặt."
   },
   {
     "id": "p09",
-    "name": "NÃ³n Sun Cap basic",
-    "category": "Phá»¥ kiá»‡n",
+    "name": "Nón Sun Cap basic",
+    "category": "Phụ kiện",
     "price": 320000,
     "rating": 4.2,
     "sold": 3110,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&w=600&q=80",
-    "description": "NÃ³n lÆ°á»¡i trai basic cho outfit cuá»‘i tuáº§n."
+    "description": "Nón lưỡi trai basic cho outfit cuối tuần."
   },
   {
     "id": "p10",
-    "name": "TÃºi Travel Duffel 32L",
-    "category": "TÃºi vÃ­",
+    "name": "Túi Travel Duffel 32L",
+    "category": "Túi ví",
     "price": 1750000,
     "rating": 4.8,
     "sold": 640,
     "tag": "best",
     "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
-    "description": "TÃºi du lá»‹ch dung tÃ­ch rá»™ng cho chuyáº¿n Ä‘i ngáº¯n."
+    "description": "Túi du lịch dung tích rộng cho chuyến đi ngắn."
   },
   {
     "id": "p11",
-    "name": "Ão Oxford Clean tráº¯ng",
-    "category": "Thá»i trang nam",
+    "name": "Áo Oxford Clean trắng",
+    "category": "Thời trang nam",
     "price": 780000,
     "rating": 4.5,
     "sold": 1560,
     "tag": "mall",
     "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
-    "description": "Ão oxford dá»… phá»‘i cho lá»‹ch lÃ m viá»‡c."
+    "description": "Áo oxford dễ phối cho lịch làm việc."
   },
   {
     "id": "p12",
-    "name": "GiÃ y Court White tá»‘i giáº£n",
-    "category": "GiÃ y dÃ©p",
+    "name": "Giày Court White tối giản",
+    "category": "Giày dép",
     "price": 1180000,
     "rating": 4.7,
     "sold": 2840,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80",
-    "description": "GiÃ y tráº¯ng dÃ¡ng court phÃ¹ há»£p nhiá»u phong cÃ¡ch."
+    "description": "Giày trắng dáng court phù hợp nhiều phong cách."
   },
   {
     "id": "p13",
-    "name": "BÃ n phÃ­m cÆ¡ compact",
-    "category": "Äiá»‡n tá»­",
+    "name": "Bàn phím cơ compact",
+    "category": "Điện tử",
     "price": 990000,
     "rating": 4.8,
     "sold": 920,
     "tag": "best",
     "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
-    "description": "BÃ n phÃ­m cÆ¡ gá»n cho gÃ³c lÃ m viá»‡c."
+    "description": "Bàn phím cơ gọn cho góc làm việc."
   },
   {
     "id": "p14",
-    "name": "BÃ¬nh giá»¯ nhiá»‡t 600ml",
-    "category": "NhÃ  cá»­a",
+    "name": "Bình giữ nhiệt 600ml",
+    "category": "Nhà cửa",
     "price": 260000,
     "rating": 4.6,
     "sold": 5020,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
-    "description": "BÃ¬nh giá»¯ nhiá»‡t thÃ©p khÃ´ng gá»‰."
+    "description": "Bình giữ nhiệt thép không gỉ."
   },
   {
     "id": "p15",
-    "name": "ÄÃ¨n bÃ n LED chá»‘ng má»i máº¯t",
-    "category": "NhÃ  cá»­a",
+    "name": "Đèn bàn LED chống mỏi mắt",
+    "category": "Nhà cửa",
     "price": 540000,
     "rating": 4.7,
     "sold": 1880,
     "tag": "mall",
     "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80",
-    "description": "ÄÃ¨n bÃ n nhiá»u cháº¿ Ä‘á»™ sÃ¡ng."
+    "description": "Đèn bàn nhiều chế độ độ sáng."
   },
   {
     "id": "p16",
-    "name": "Kem dÆ°á»¡ng mini travel",
-    "category": "LÃ m Ä‘áº¹p",
+    "name": "Kem dưỡng mini travel",
+    "category": "Làm đẹp",
     "price": 180000,
     "rating": 4.4,
     "sold": 6730,
     "tag": "new",
     "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80",
-    "description": "Kem dÆ°á»¡ng size nhá» tiá»‡n mang theo."
+    "description": "Kem dưỡng size nhỏ tiện mang theo."
   },
   {
     "id": "p17",
-    "name": "Serum sÃ¡ng da 30ml",
-    "category": "LÃ m Ä‘áº¹p",
+    "name": "Serum sáng da 30ml",
+    "category": "Làm đẹp",
     "price": 430000,
     "rating": 4.6,
     "sold": 3910,
     "tag": "deal",
     "image": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80",
-    "description": "Serum dÆ°á»¡ng da cho routine buá»•i tá»‘i."
+    "description": "Serum dưỡng da cho routine buổi tối."
   },
   {
     "id": "p18",
-    "name": "Chuá»™t wireless silent",
-    "category": "Äiá»‡n tá»­",
+    "name": "Chuột wireless silent",
+    "category": "Điện tử",
     "price": 350000,
     "rating": 4.5,
     "sold": 2450,
     "tag": "best",
     "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=600&q=80",
-    "description": "Chuá»™t khÃ´ng dÃ¢y click Ãªm."
+    "description": "Chuột không dây click âm."
   },
   {
     "id": "p19",
-    "name": "Ká»‡ sÃ¡ch mini Ä‘á»ƒ bÃ n",
-    "category": "NhÃ  cá»­a",
+    "name": "Kệ sách mini để bàn",
+    "category": "Nhà cửa",
     "price": 490000,
     "rating": 4.3,
     "sold": 1320,
     "tag": "new",
     "image": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
-    "description": "Ká»‡ nhá» cho sÃ¡ch vÃ  Ä‘á»“ trang trÃ­."
+    "description": "Kệ nhỏ cho sách và đồ trang trí."
   },
   {
     "id": "p20",
-    "name": "Ão thun Premium cotton",
-    "category": "Thá»i trang nam",
+    "name": "Áo thun Premium cotton",
+    "category": "Thời trang nam",
     "price": 350000,
     "rating": 4.6,
     "sold": 4480,
     "tag": "best",
     "image": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80",
-    "description": "Ão thun cotton dÃ y vá»«a, form dá»… máº·c."
+    "description": "Áo thun cotton dày vừa, form dễ mặc."
   }
 ]

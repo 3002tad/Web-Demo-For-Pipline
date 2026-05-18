@@ -1,58 +1,27 @@
-{
-  "GiÃ y dÃ©p": {
+[
+  {
+    "id": "sup01",
     "name": "Urban Sole Official",
-    "location": "TP. Há»“ ChÃ­ Minh",
-    "rating": 4.8,
-    "followers": "128k",
-    "response": "92%",
-    "products": 184
+    "rating": 4.9
   },
-  "TÃºi vÃ­": {
+  {
+    "id": "sup02",
     "name": "Carry Studio",
-    "location": "HÃ  Ná»™i",
-    "rating": 4.7,
-    "followers": "84k",
-    "response": "95%",
-    "products": 96
+    "rating": 4.1
   },
-  "Phá»¥ kiá»‡n": {
+  {
+    "id": "sup03",
     "name": "Core Accessories Mall",
-    "location": "ÄÃ  Náºµng",
-    "rating": 4.6,
-    "followers": "67k",
-    "response": "90%",
-    "products": 143
+    "rating": 4.2
   },
-  "Thá»i trang nam": {
+  {
+    "id": "sup04",
     "name": "Dailywear Vietnam",
-    "location": "TP. Há»“ ChÃ­ Minh",
-    "rating": 4.7,
-    "followers": "212k",
-    "response": "93%",
-    "products": 220
+    "rating": 4.3
   },
-  "Äiá»‡n tá»­": {
+  {
+    "id": "sup05",
     "name": "TechPoint Official",
-    "location": "HÃ  Ná»™i",
-    "rating": 4.9,
-    "followers": "176k",
-    "response": "97%",
-    "products": 118
-  },
-  "NhÃ  cá»­a": {
-    "name": "HomeLab Store",
-    "location": "BÃ¬nh DÆ°Æ¡ng",
-    "rating": 4.6,
-    "followers": "59k",
-    "response": "91%",
-    "products": 134
-  },
-  "LÃ m Ä‘áº¹p": {
-    "name": "GlowCare Mall",
-    "location": "TP. Há»“ ChÃ­ Minh",
-    "rating": 4.8,
-    "followers": "154k",
-    "response": "96%",
-    "products": 88
+    "rating": 4.4
   }
-}
+]

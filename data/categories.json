@@ -1,10 +1,30 @@
-{
-  "Táº¥t cáº£": "https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=160&q=80",
-  "GiÃ y dÃ©p": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=160&q=80",
-  "TÃºi vÃ­": "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=160&q=80",
-  "Phá»¥ kiá»‡n": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=160&q=80",
-  "Thá»i trang nam": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=160&q=80",
-  "Äiá»‡n tá»­": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=160&q=80",
-  "NhÃ  cá»­a": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=160&q=80",
-  "LÃ m Ä‘áº¹p": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=160&q=80"
-}
+[
+  {
+    "id": "cat01",
+    "name": "Giày dép"
+  },
+  {
+    "id": "cat02",
+    "name": "Túi ví"
+  },
+  {
+    "id": "cat03",
+    "name": "Phụ kiện"
+  },
+  {
+    "id": "cat04",
+    "name": "Thời trang nam"
+  },
+  {
+    "id": "cat05",
+    "name": "Điện tử"
+  },
+  {
+    "id": "cat06",
+    "name": "Nhà cửa"
+  },
+  {
+    "id": "cat07",
+    "name": "Làm đẹp"
+  }
+]
