@@ -1,0 +1,237 @@
+﻿<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MarketHub</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <a href="#seller" data-track-name="top_seller">KÃªnh ngÆ°á»i bÃ¡n</a>
+        <span>|</span>
+        <button type="button" data-voucher-code="APP10" data-track-name="top_download_app">Táº£i á»©ng dá»¥ng</button>
+      </div>
+      <div>
+        <button type="button" data-track-name="top_notifications">ThÃ´ng bÃ¡o</button>
+        <span>|</span>
+        <button type="button" data-track-name="top_help">Há»— trá»£</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        MarketHub
+        <span>Mua sáº¯m tiá»‡n lá»£i má»—i ngÃ y</span>
+      </div>
+      <div>
+        <form class="search-box" id="searchForm">
+          <input id="searchInput" type="search" placeholder="TÃ¬m flash sale, Ã¡o, giÃ y, phá»¥ kiá»‡n..." aria-label="TÃ¬m sáº£n pháº©m">
+          <button type="submit" data-track-name="search_submit">TÃ¬m kiáº¿m</button>
+        </form>
+        <div class="keyword-row" aria-label="Tá»« khÃ³a nhanh">
+          <button type="button" data-keyword="giÃ y" data-track-name="quick_kw_giay">giÃ y</button>
+          <button type="button" data-keyword="tÃºi" data-track-name="quick_kw_tui">tÃºi</button>
+          <button type="button" data-keyword="tai nghe" data-track-name="quick_kw_tainghe">tai nghe</button>
+          <button type="button" data-keyword="deal" data-track-name="quick_kw_deal">deal</button>
+        </div>
+      </div>
+      <button class="cart-button" type="button" id="openCartButton" data-track-name="open_cart">
+        Giá» hÃ ng <span id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="market-hero" data-track-view="market_hero">
+      <div class="hero-banner">
+        <div class="hero-copy">
+          <span class="badge">Mega campaign</span>
+          <h1>MarketHub, mua sáº¯m nhanh cho má»i nhu cáº§u háº±ng ngÃ y</h1>
+          <p>KhÃ¡m phÃ¡ Æ°u Ä‘Ã£i má»›i, chá»n sáº£n pháº©m tá»« cÃ¡c gian hÃ ng uy tÃ­n, lÆ°u voucher, thÃªm vÃ o giá» vÃ  Ä‘áº·t hÃ ng trong vÃ i bÆ°á»›c.</p>
+          <a class="primary-button" href="#products" data-track-name="hero_shop_now">SÄƒn deal ngay</a>
+        </div>
+        <img src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=900&q=80" alt="">
+      </div>
+      <div class="hero-side">
+        <div class="hero-tile" data-track-view="hero_side_flash">
+          <img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=700&q=80" alt="">
+          <strong>Flash sale má»—i giá»</strong>
+        </div>
+        <div class="hero-tile" data-track-view="hero_side_voucher">
+          <img src="https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=700&q=80" alt="">
+          <strong>Voucher freeship</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="services" data-track-view="service_shortcuts">
+      <button class="service-card" type="button" data-track-name="service_freeship"><span>F</span>Freeship</button>
+      <button class="service-card" type="button" data-track-name="service_flash"><span>%</span>Flash Sale</button>
+      <button class="service-card" type="button" data-track-name="service_mall"><span>M</span>MarketHub Mall</button>
+      <button class="service-card" type="button" data-track-name="service_coin"><span>C</span>Xu thÆ°á»Ÿng</button>
+      <button class="service-card" type="button" data-track-name="service_live"><span>L</span>Live Sale</button>
+    </section>
+
+    <section class="panel-card" id="categories" data-track-view="category_section">
+      <div class="section-head">
+        <h2>Danh má»¥c</h2>
+        <span class="muted">Chá»n danh má»¥c Ä‘á»ƒ lá»c sáº£n pháº©m</span>
+      </div>
+      <div class="category-grid" id="categoryGrid"></div>
+    </section>
+
+    <section class="panel-card" id="flashSale" data-track-view="flash_sale_section">
+      <div class="section-head">
+        <h2>Flash Sale</h2>
+        <strong class="sale-countdown">Káº¿t thÃºc trong <span id="flashCountdown">02:18:45</span></strong>
+      </div>
+      <div class="deal-row" id="dealRow"></div>
+    </section>
+
+    <section class="panel-card" data-track-view="voucher_section">
+      <div class="section-head">
+        <h2>Kho voucher</h2>
+        <span class="muted">LÆ°u voucher Ä‘á»ƒ dÃ¹ng khi thanh toÃ¡n</span>
+      </div>
+      <div class="voucher-row">
+        <button class="voucher" type="button" data-voucher-code="SHIP0" data-track-name="voucher_ship0"><strong>Freeship 0Ä‘</strong><span class="muted">ÄÆ¡n tá»« 99k</span></button>
+        <button class="voucher" type="button" data-voucher-code="SALE15" data-track-name="voucher_sale15"><strong>Giáº£m 15%</strong><span class="muted">Tá»‘i Ä‘a 80k</span></button>
+        <button class="voucher" type="button" data-voucher-code="MALL50" data-track-name="voucher_mall50"><strong>Mall -50k</strong><span class="muted">ÄÆ¡n tá»« 500k</span></button>
+        <button class="voucher" type="button" data-voucher-code="NEWUSER" data-track-name="voucher_newuser"><strong>New user</strong><span class="muted">Æ¯u Ä‘Ã£i láº§n Ä‘áº§u</span></button>
+      </div>
+    </section>
+
+    <section id="products" data-track-view="product_listing">
+      <div class="catalog-shell">
+        <aside class="sidebar" data-track-view="catalog_sidebar">
+          <strong>Bá»™ lá»c tÃ¬m kiáº¿m</strong>
+          <label>
+            Danh má»¥c
+            <select id="categorySelect" data-track-name="category_select"></select>
+          </label>
+          <label>
+            Khoáº£ng giÃ¡
+            <select id="priceFilter" data-track-name="price_filter">
+              <option value="all">Táº¥t cáº£</option>
+              <option value="under_500">DÆ°á»›i 500k</option>
+              <option value="500_1200">500k - 1.2tr</option>
+              <option value="over_1200">TrÃªn 1.2tr</option>
+            </select>
+          </label>
+          <label>
+            Loáº¡i Æ°u Ä‘Ã£i
+            <select id="tagFilter" data-track-name="tag_filter">
+              <option value="all">Táº¥t cáº£</option>
+              <option value="deal">Deal sá»‘c</option>
+              <option value="mall">Mall</option>
+              <option value="best">BÃ¡n cháº¡y</option>
+              <option value="new">HÃ ng má»›i</option>
+            </select>
+          </label>
+          <label>
+            ÄÃ¡nh giÃ¡
+            <select id="ratingFilter" data-track-name="rating_filter">
+              <option value="all">Táº¥t cáº£</option>
+              <option value="4.5">Tá»« 4.5 sao</option>
+              <option value="4.7">Tá»« 4.7 sao</option>
+            </select>
+          </label>
+          <button class="secondary-button" type="button" id="resetFiltersButton" data-track-name="reset_filters">XÃ³a bá»™ lá»c</button>
+        </aside>
+
+        <div class="product-area">
+          <div class="sort-row">
+            <div>
+              <h2>Gá»£i Ã½ hÃ´m nay</h2>
+              <p class="muted" id="resultSummary">0 sáº£n pháº©m</p>
+            </div>
+            <div class="tab-row" id="tabRow">
+              <button class="tab-button active" type="button" data-tab="all" data-track-name="tab_all">Táº¥t cáº£</button>
+              <button class="tab-button" type="button" data-tab="mall" data-track-name="tab_mall">Mall</button>
+              <button class="tab-button" type="button" data-tab="deal" data-track-name="tab_deal">Deal sá»‘c</button>
+              <button class="tab-button" type="button" data-tab="best" data-track-name="tab_best">BÃ¡n cháº¡y</button>
+            </div>
+            <select id="sortSelect" aria-label="Sáº¯p xáº¿p" data-track-name="sort_select">
+              <option value="featured">LiÃªn quan</option>
+              <option value="price_asc">GiÃ¡ tháº¥p Ä‘áº¿n cao</option>
+              <option value="price_desc">GiÃ¡ cao Ä‘áº¿n tháº¥p</option>
+              <option value="sold_desc">BÃ¡n cháº¡y</option>
+              <option value="rating_desc">Rating cao</option>
+            </select>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="panel" id="detailPanel" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="panel-header">
+        <strong id="detailTitle">Chi tiáº¿t sáº£n pháº©m</strong>
+        <button class="close-button" type="button" data-close-panel>X</button>
+      </div>
+      <div class="panel-content" id="detailContent"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="cartPanel" aria-hidden="true">
+    <aside class="drawer" aria-label="Giá» hÃ ng">
+      <div class="panel-header">
+        <strong>Giá» hÃ ng</strong>
+        <button class="close-button" type="button" data-close-panel>X</button>
+      </div>
+      <div class="panel-content" id="cartItems"></div>
+      <div class="panel-footer">
+        <strong>Tá»•ng: <span id="cartTotal">0Ä‘</span></strong>
+        <button class="primary-button" type="button" id="checkoutButton" data-track-name="checkout_start">Checkout</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="panel" id="checkoutPanel" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <div class="panel-header">
+        <strong id="checkoutTitle">Thanh toÃ¡n</strong>
+        <button class="close-button" type="button" data-close-panel>X</button>
+      </div>
+      <div class="panel-content">
+        <div class="checkout-steps">
+          <div class="field-grid">
+            <label>Há» tÃªn<input id="customerName" value="Nguyá»…n Minh Anh"></label>
+            <label>Email<input id="customerEmail" value="minhanh@example.com"></label>
+          </div>
+          <label>
+            PhÆ°Æ¡ng thá»©c giao hÃ ng
+            <select id="shippingMethod">
+              <option value="standard">TiÃªu chuáº©n - 3 ngÃ y</option>
+              <option value="express">Nhanh - 24 giá»</option>
+            </select>
+          </label>
+          <label>
+            PhÆ°Æ¡ng thá»©c thanh toÃ¡n
+            <select id="paymentMethod">
+              <option value="cod">COD</option>
+              <option value="card">Tháº» ná»™i Ä‘á»‹a</option>
+              <option value="wallet">VÃ­ Ä‘iá»‡n tá»­</option>
+            </select>
+          </label>
+          <button class="primary-button" type="button" id="completeOrderButton" data-track-name="complete_order">Äáº·t hÃ ng</button>
+          <div class="success-box" id="successBox">Äáº·t hÃ ng thÃ nh cÃ´ng. Cáº£m Æ¡n báº¡n Ä‘Ã£ mua sáº¯m táº¡i MarketHub.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>MarketHub Â© 2026. Mua sáº¯m tiá»‡n lá»£i, giao hÃ ng nhanh, Ä‘á»•i tráº£ dá»… dÃ ng.</footer>
+
+  <script src="/input/tracking.js"></script>
+  <script src="/assets/js/app.js"></script>
+</body>
+</html>
+
