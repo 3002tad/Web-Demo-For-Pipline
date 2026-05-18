@@ -1,27 +1,51 @@
-[
-  {
-    "id": "sup01",
+{
+  "Giày dép": {
     "name": "Urban Sole Official",
-    "rating": 4.9
+    "rating": 4.9,
+    "location": "TP.HCM",
+    "response": "2h",
+    "products": 1250
   },
-  {
-    "id": "sup02",
+  "Túi ví": {
     "name": "Carry Studio",
-    "rating": 4.1
+    "rating": 4.1,
+    "location": "Hà Nội",
+    "response": "1h",
+    "products": 890
   },
-  {
-    "id": "sup03",
+  "Phụ kiện": {
     "name": "Core Accessories Mall",
-    "rating": 4.2
+    "rating": 4.2,
+    "location": "Đà Nẵng",
+    "response": "3h",
+    "products": 2100
   },
-  {
-    "id": "sup04",
+  "Thời trang nam": {
     "name": "Dailywear Vietnam",
-    "rating": 4.3
+    "rating": 4.3,
+    "location": "TP.HCM",
+    "response": "2h",
+    "products": 3450
   },
-  {
-    "id": "sup05",
+  "Điện tử": {
     "name": "TechPoint Official",
-    "rating": 4.4
+    "rating": 4.4,
+    "location": "TP.HCM",
+    "response": "30m",
+    "products": 1850
+  },
+  "Nhà cửa": {
+    "name": "Home Depot Store",
+    "rating": 4.5,
+    "location": "Hà Nội",
+    "response": "4h",
+    "products": 2750
+  },
+  "Làm đẹp": {
+    "name": "Beauty Pro Shop",
+    "rating": 4.6,
+    "location": "TP.HCM",
+    "response": "1h",
+    "products": 3200
   }
-]
+}
