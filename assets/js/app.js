@@ -338,7 +338,9 @@
       `;
 
       openPanel(detailPanel);
-      window.tracking.trackProductView(product.id, window.location.pathname).catch(function() {});
+      window.tracking.trackProductView(product.id, window.location.pathname, {
+        name: product.name, price: product.price, category: product.category
+      }).catch(function() {});
     }
 
     function addToCart(productId) {
@@ -413,14 +415,25 @@
     }
 
     function completeOrder() {
-      const order = {
-        orderId: "ORDER-" + Date.now(),
-        itemCount: cartSize(),
-        cartValue: cartValue(),
-        shippingMethod: document.getElementById("shippingMethod").value,
-        paymentMethod: document.getElementById("paymentMethod").value
-      };
-      window.tracking.trackCustom("purchase_succeeded", { metadata: order }).catch(function() {});
+      const total = cartValue();
+      const items = Array.from(cart.values());
+
+      // Track 1 event per product để revenue ghi đúng theo từng sản phẩm
+      items.forEach(function(item) {
+        window.tracking.trackCustom("purchase_succeeded", {
+          product_id: item.product.id,
+          metadata: {
+            name: item.product.name,
+            price: item.product.price,
+            category: item.product.category,
+            amount: item.product.price * item.quantity,
+            quantity: item.quantity,
+            order_id: "ORDER-" + Date.now(),
+            payment_method: document.getElementById("paymentMethod").value
+          }
+        }).catch(function() {});
+      });
+
       successBox.classList.add("show");
       cart.clear();
       renderCart();
@@ -514,7 +527,10 @@
 
       if (detailButton) {
         const id = detailButton.getAttribute("data-detail-id");
-        window.tracking.trackProductClick(id, window.location.pathname).catch(function() {});
+        const clicked = products.find(function(p) { return p.id === id; });
+        window.tracking.trackProductClick(id, window.location.pathname,
+          clicked ? { name: clicked.name, price: clicked.price, category: clicked.category } : {}
+        ).catch(function() {});
         showProductDetail(id);
       }
       if (addButton) addToCart(addButton.getAttribute("data-add-id"));

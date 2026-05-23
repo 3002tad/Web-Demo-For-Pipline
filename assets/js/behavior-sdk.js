@@ -14,7 +14,7 @@ function storageSet(key, value) {
 }
 
 export function createBehaviorSdk(options = {}) {
-  const endpoint = (options.endpoint || "http://100.64.0.3:3100").replace(/\/$/, "");
+  const endpoint = (options.endpoint || "http://lap1:3100").replace(/\/$/, "");
   const debug = Boolean(options.debug);
   let userId = options.userId ?? null;
 
@@ -69,10 +69,18 @@ export function createBehaviorSdk(options = {}) {
     setUserId: (id) => { userId = id; },
     newSession: () => { storageSet(SESS_KEY, randomId("sess")); },
     trackPageView: (pageUrl) => send(basePayload("page_view", { page_url: pageUrl })),
-    trackProductView: (productId, pageUrl) =>
-      send(basePayload("product_view", { product_id: productId, page_url: pageUrl })),
-    trackProductClick: (productId, pageUrl) =>
-      send(basePayload("product_click", { product_id: productId, page_url: pageUrl })),
+    trackProductView: (productId, pageUrl, productMeta = {}) =>
+      send(basePayload("product_view", {
+        product_id: productId,
+        page_url: pageUrl,
+        metadata: { ...productMeta },
+      })),
+    trackProductClick: (productId, pageUrl, productMeta = {}) =>
+      send(basePayload("product_click", {
+        product_id: productId,
+        page_url: pageUrl,
+        metadata: { ...productMeta },
+      })),
     trackSearch: (query) => send(basePayload("search", { metadata: { query } })),
     trackFilterApply: (filters) => send(basePayload("filter_apply", { metadata: { filters } })),
     trackScrollDepth: (percent, pageUrl) =>
