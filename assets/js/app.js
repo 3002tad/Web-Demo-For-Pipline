@@ -1,11 +1,4 @@
-TrackingSDK.init({
-      appId: "markethub-store",
-      endpoint: "/track",
-      trackPageView: true,
-      trackClicks: true,
-      trackScroll: true,
-      trackViews: true
-    });
+
 
     let products = [];
 
@@ -242,15 +235,21 @@ TrackingSDK.init({
 
     function trackCatalogChanged(eventName, extra) {
       renderProducts();
-      TrackingSDK.track(eventName, Object.assign({
-        searchTerm: searchTerm || null,
+      
+      const payload = {
         category: activeCategory,
         priceMode,
         tagMode,
         ratingMode,
         sortMode,
         visibleProducts: filteredProducts().length
-      }, extra || {}));
+      };
+
+      if (eventName === "search_submit" || eventName === "quick_keyword") {
+        window.tracking.trackSearch(searchTerm || "").catch(function() {});
+      } else {
+        window.tracking.trackFilterApply(payload).catch(function() {});
+      }
     }
 
     function openPanel(panel) {
@@ -339,7 +338,7 @@ TrackingSDK.init({
       `;
 
       openPanel(detailPanel);
-      TrackingSDK.track("product_detail_open", productPayload(product));
+      window.tracking.trackProductView(product.id, window.location.pathname).catch(function() {});
     }
 
     function addToCart(productId) {
@@ -352,10 +351,13 @@ TrackingSDK.init({
       current.quantity += 1;
       cart.set(productId, current);
       renderCart();
-      TrackingSDK.track("add_to_cart", Object.assign(productPayload(product), {
-        quantity: current.quantity,
-        cartValue: cartValue()
-      }));
+      window.tracking.trackCustom("add_to_cart", {
+        product_id: product.id,
+        metadata: Object.assign(productPayload(product), {
+          quantity: current.quantity,
+          cartValue: cartValue()
+        })
+      }).catch(function() {});
     }
 
     function cartValue() {
@@ -396,18 +398,18 @@ TrackingSDK.init({
     function openCart() {
       renderCart();
       openPanel(cartPanel);
-      TrackingSDK.track("cart_open", { itemCount: cartSize(), cartValue: cartValue() });
+      // cart_open not supported by tracking API, omit
     }
 
     function startCheckout() {
       if (cart.size === 0) {
-        TrackingSDK.track("checkout_blocked", { reason: "empty_cart" });
+        // checkout_blocked not supported by tracking API, omit
         return;
       }
       closePanel(cartPanel);
       successBox.classList.remove("show");
       openPanel(checkoutPanel);
-      TrackingSDK.track("checkout_started", { itemCount: cartSize(), cartValue: cartValue() });
+      window.tracking.trackCustom("checkout_start", { metadata: { itemCount: cartSize(), cartValue: cartValue() } }).catch(function() {});
     }
 
     function completeOrder() {
@@ -418,8 +420,7 @@ TrackingSDK.init({
         shippingMethod: document.getElementById("shippingMethod").value,
         paymentMethod: document.getElementById("paymentMethod").value
       };
-      TrackingSDK.track("checkout_step", { step: "customer_info_submitted", hasName: Boolean(document.getElementById("customerName").value), hasEmail: Boolean(document.getElementById("customerEmail").value) });
-      TrackingSDK.track("purchase_completed", order);
+      window.tracking.trackCustom("purchase_succeeded", { metadata: order }).catch(function() {});
       successBox.classList.add("show");
       cart.clear();
       renderCart();
@@ -511,19 +512,20 @@ TrackingSDK.init({
       const voucherButton = event.target.closest("[data-voucher-code]");
       const supplierButton = event.target.closest("[data-supplier-name]");
 
-      if (detailButton) showProductDetail(detailButton.getAttribute("data-detail-id"));
+      if (detailButton) {
+        const id = detailButton.getAttribute("data-detail-id");
+        window.tracking.trackProductClick(id, window.location.pathname).catch(function() {});
+        showProductDetail(id);
+      }
       if (addButton) addToCart(addButton.getAttribute("data-add-id"));
       if (wishlistButton) {
-        const product = products.find(function (item) {
-          return item.id === wishlistButton.getAttribute("data-wishlist-id");
-        });
-        if (product) TrackingSDK.track("wishlist_added", productPayload(product));
+        // unsupported by backend -> removed
       }
       if (voucherButton) {
-        TrackingSDK.track("voucher_saved", { code: voucherButton.getAttribute("data-voucher-code") });
+        // unsupported by backend -> removed
       }
       if (supplierButton) {
-        TrackingSDK.track("supplier_open", { supplier: supplierButton.getAttribute("data-supplier-name") });
+        // unsupported by backend -> removed
       }
       if (removeButton) {
         const productId = removeButton.getAttribute("data-remove-id");
@@ -532,7 +534,6 @@ TrackingSDK.init({
         item.quantity -= 1;
         if (item.quantity <= 0) cart.delete(productId);
         renderCart();
-        TrackingSDK.track("remove_from_cart", { productId, cartValue: cartValue() });
       }
       if (event.target.matches("[data-close-panel]")) closePanel(event.target.closest(".panel"));
     });
@@ -551,9 +552,8 @@ TrackingSDK.init({
       startFlashCountdown();
 
       products.slice(0, 60).forEach(function (product, index) {
-        window.setTimeout(function () {
-          TrackingSDK.track("product_impression", Object.assign(productPayload(product), { position: index + 1 }));
-        }, 250 + index * 45);
+        // tracking product_impression is not supported by the backend 
+        // -> skipping.
       });
     }
 
