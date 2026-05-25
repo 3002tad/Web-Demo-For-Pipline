@@ -1,1 +1,0 @@
-const payload={event_source:"browser_sdk",event_category:"behavior",event_type:"page_view",anonymous_id:"test",session_id:"test",user_id:null,page_url:"/",timestamp:new Date().toISOString(),metadata:{device:"desktop",browser:"unknown"}}; console.log(JSON.stringify(payload));

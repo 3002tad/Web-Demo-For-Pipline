@@ -1,581 +1,573 @@
+let products = [];
+let categoryImages = {};
+const cart = new Map();
 
+const SESSION_KEY = "pipeline_session_id";
+const ALL_CATEGORY = "Tat ca";
 
-    let products = [];
+let searchTerm = "";
+let activeCategory = ALL_CATEGORY;
+let priceMode = "all";
+let tagMode = "all";
+let ratingMode = "all";
+let sortMode = "featured";
 
-    let suppliers = {};
+const categoryGrid = document.getElementById("categoryGrid");
+const categorySelect = document.getElementById("categorySelect");
+const dealRow = document.getElementById("dealRow");
+const flashCountdown = document.getElementById("flashCountdown");
+const productGrid = document.getElementById("productGrid");
+const resultSummary = document.getElementById("resultSummary");
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+const priceFilter = document.getElementById("priceFilter");
+const tagFilter = document.getElementById("tagFilter");
+const ratingFilter = document.getElementById("ratingFilter");
+const tabRow = document.getElementById("tabRow");
+const cartCount = document.getElementById("cartCount");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
+const cartPanel = document.getElementById("cartPanel");
+const detailPanel = document.getElementById("detailPanel");
+const detailContent = document.getElementById("detailContent");
+const checkoutPanel = document.getElementById("checkoutPanel");
+const successBox = document.getElementById("successBox");
 
-    function expandCatalogProducts(targetCount) {
-      const tags = ["deal", "mall", "best", "new"];
-      const prefixes = ["Bộ sưu tập", "Phiên bản", "Sản phẩm", "Combo", "Mẫu mới", "Hàng chọn lọc", "Ưu đãi"];
-      const variants = ["Premium", "Daily", "Urban", "Lite", "Pro", "Classic", "Modern", "Essential", "Plus", "Signature"];
-      const supplierCategories = Object.keys(suppliers);
-      let index = products.length + 1;
+function storageGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 
-      while (products.length < targetCount) {
-        const category = supplierCategories[(index - 1) % supplierCategories.length];
-        const seedProduct = products.find(function (product) {
-          return product.category === category;
-        }) || products[0];
-        const price = Math.round((180000 + ((index * 7919) % 2300000)) / 10000) * 10000;
-        const rating = Number((4.1 + ((index * 37) % 9) / 10).toFixed(1));
-        const sold = 120 + ((index * 347) % 9800);
-        const tag = tags[index % tags.length];
+function getSessionId() {
+  return storageGet(SESSION_KEY) || "anonymous-browser-session";
+}
 
-        products.push({
-          id: "p" + String(index).padStart(3, "0"),
-          name: `${prefixes[index % prefixes.length]} ${category} ${variants[index % variants.length]} ${String(index).padStart(3, "0")}`,
-          category,
-          price,
-          rating,
-          sold,
-          tag,
-          image: seedProduct.image,
-          description: `Sản phẩm ${category.toLowerCase()} được tuyển chọn bởi ${suppliers[category].name}, phù hợp cho nhu cầu mua sắm hằng ngày.`
-        });
-
-        index += 1;
-      }
+async function apiFetch(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     }
+  });
 
-    let categoryImages = {};
-    const cart = new Map();
-    let searchTerm = "";
-    let activeCategory = "Tất cả";
-    let priceMode = "all";
-    let tagMode = "all";
-    let ratingMode = "all";
-    let sortMode = "featured";
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
 
-    async function loadStoreData() {
-      const responses = await Promise.all([
-        fetch("/data/products.json"),
-        fetch("/data/suppliers.json"),
-        fetch("/data/categories.json")
-      ]);
+  return response.json();
+}
 
-      if (responses.some(function (response) { return !response.ok; })) {
-        throw new Error("Cannot load store data");
-      }
+function money(value) {
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+}
 
-      const data = await Promise.all(responses.map(function (response) {
-        return response.json();
-      }));
+async function loadStoreData() {
+  const [productResponse, categoryResponse] = await Promise.all([
+    apiFetch("/api/products"),
+    apiFetch("/api/categories"),
+    apiFetch("/api/suppliers")
+  ]);
 
-      products = data[0];
-      suppliers = data[1];
-      categoryImages = data[2];
-    }
+  products = productResponse.data;
+  categoryImages = categoryResponse.data.reduce((images, category) => {
+    images[category.name] = category.image;
+    return images;
+  }, {});
+  categoryImages[ALL_CATEGORY] = categoryImages[Object.keys(categoryImages)[0]] || "";
+}
 
-    function prepareProducts() {
-      expandCatalogProducts(500);
-      products.forEach(function (product, index) {
-        product.supplier = suppliers[product.category];
-        product.shipping = index % 3 === 0 ? "Freeship Extra" : "Giao trong 2-3 ngày";
-        product.origin = product.supplier.location;
-        product.stock = 24 + index * 7;
-      });
-    }
-    const categoryGrid = document.getElementById("categoryGrid");
-    const categorySelect = document.getElementById("categorySelect");
-    const dealRow = document.getElementById("dealRow");
-    const flashCountdown = document.getElementById("flashCountdown");
-    const productGrid = document.getElementById("productGrid");
-    const resultSummary = document.getElementById("resultSummary");
-    const searchInput = document.getElementById("searchInput");
-    const sortSelect = document.getElementById("sortSelect");
-    const priceFilter = document.getElementById("priceFilter");
-    const tagFilter = document.getElementById("tagFilter");
-    const ratingFilter = document.getElementById("ratingFilter");
-    const tabRow = document.getElementById("tabRow");
-    const cartCount = document.getElementById("cartCount");
-    const cartItems = document.getElementById("cartItems");
-    const cartTotal = document.getElementById("cartTotal");
-    const cartPanel = document.getElementById("cartPanel");
-    const detailPanel = document.getElementById("detailPanel");
-    const detailContent = document.getElementById("detailContent");
-    const checkoutPanel = document.getElementById("checkoutPanel");
-    const successBox = document.getElementById("successBox");
+function categories() {
+  return [ALL_CATEGORY].concat(Array.from(new Set(products.map((product) => product.category))));
+}
 
-    function money(value) {
-      return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
-    }
+function productPayload(product) {
+  return {
+    productId: product.id,
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    rating: product.rating,
+    sold: product.sold,
+    tag: product.tag,
+    supplier: product.supplier.name
+  };
+}
 
-    function categories() {
-      return ["Tất cả"].concat(Array.from(new Set(products.map(function (product) {
-        return product.category;
-      }))));
-    }
+function matchesPrice(product) {
+  if (priceMode === "under_500") return product.price < 500000;
+  if (priceMode === "500_1200") return product.price >= 500000 && product.price <= 1200000;
+  if (priceMode === "over_1200") return product.price > 1200000;
+  return true;
+}
 
-    function productPayload(product) {
-      return {
-        productId: product.id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        rating: product.rating,
-        sold: product.sold,
-        tag: product.tag,
-        supplier: product.supplier.name
-      };
-    }
+function filteredProducts() {
+  const term = searchTerm.trim().toLowerCase();
 
-    function matchesPrice(product) {
-      if (priceMode === "under_500") return product.price < 500000;
-      if (priceMode === "500_1200") return product.price >= 500000 && product.price <= 1200000;
-      if (priceMode === "over_1200") return product.price > 1200000;
-      return true;
-    }
+  return products
+    .filter((product) => {
+      const bySearch = !term
+        || product.name.toLowerCase().includes(term)
+        || product.category.toLowerCase().includes(term)
+        || product.description.toLowerCase().includes(term)
+        || product.tag.includes(term);
+      const byCategory = activeCategory === ALL_CATEGORY || product.category === activeCategory;
+      const byTag = tagMode === "all" || product.tag === tagMode;
+      const byRating = ratingMode === "all" || product.rating >= Number(ratingMode);
+      return bySearch && byCategory && byTag && byRating && matchesPrice(product);
+    })
+    .sort((a, b) => {
+      if (sortMode === "price_asc") return a.price - b.price;
+      if (sortMode === "price_desc") return b.price - a.price;
+      if (sortMode === "sold_desc") return b.sold - a.sold;
+      if (sortMode === "rating_desc") return b.rating - a.rating;
+      return products.indexOf(a) - products.indexOf(b);
+    });
+}
 
-    function filteredProducts() {
-      const term = searchTerm.trim().toLowerCase();
+function renderCategories() {
+  const cats = categories();
+  categoryGrid.innerHTML = cats.map((category) => {
+    const image = categoryImages[category] || categoryImages[ALL_CATEGORY];
+    return `
+      <button class="category-card" type="button" data-category="${category}" data-track-name="category_${category}">
+        <span class="category-icon"><img src="${image}" alt="${category}"></span>
+        <strong>${category}</strong>
+      </button>
+    `;
+  }).join("");
 
-      return products
-        .filter(function (product) {
-          const bySearch = !term || product.name.toLowerCase().includes(term) || product.category.toLowerCase().includes(term) || product.description.toLowerCase().includes(term) || product.tag.includes(term);
-          const byCategory = activeCategory === "Tất cả" || product.category === activeCategory;
-          const byTag = tagMode === "all" || product.tag === tagMode;
-          const byRating = ratingMode === "all" || product.rating >= Number(ratingMode);
-          return bySearch && byCategory && byTag && byRating && matchesPrice(product);
-        })
-        .sort(function (a, b) {
-          if (sortMode === "price_asc") return a.price - b.price;
-          if (sortMode === "price_desc") return b.price - a.price;
-          if (sortMode === "sold_desc") return b.sold - a.sold;
-          if (sortMode === "rating_desc") return b.rating - a.rating;
-          return products.indexOf(a) - products.indexOf(b);
-        });
-    }
+  categorySelect.innerHTML = cats.map((category) => `<option value="${category}">${category}</option>`).join("");
+}
 
-    function renderCategories() {
-      const cats = categories();
-      categoryGrid.innerHTML = cats.map(function (category) {
-        const image = categoryImages[category] || categoryImages["Tất cả"];
-        return `
-          <button class="category-card" type="button" data-category="${category}" data-track-name="category_${category}">
-            <span class="category-icon"><img src="${image}" alt="${category}"></span>
-            <strong>${category}</strong>
+function startFlashCountdown() {
+  let remainingSeconds = 2 * 60 * 60 + 18 * 60 + 45;
+
+  function formatTime(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function renderCountdown() {
+    const hours = Math.floor(remainingSeconds / 3600);
+    const minutes = Math.floor((remainingSeconds % 3600) / 60);
+    const seconds = remainingSeconds % 60;
+    flashCountdown.textContent = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
+    remainingSeconds = remainingSeconds > 0 ? remainingSeconds - 1 : 2 * 60 * 60 + 18 * 60 + 45;
+  }
+
+  renderCountdown();
+  window.setInterval(renderCountdown, 1000);
+}
+
+function productCard(product, compact) {
+  return `
+    <article class="product-card" data-track-view="product_${product.id}">
+      <img src="${product.image}" alt="${product.name}">
+      <div class="product-body">
+        <span class="badge">${product.tag}</span>
+        <h3 class="product-name">${product.name}</h3>
+        <strong class="price">${money(product.price)}</strong>
+        <span class="supplier-line">${product.supplier.name}</span>
+        <div class="rating-line">
+          <span>${product.rating} sao</span>
+          <span>Da ban ${product.sold}</span>
+        </div>
+        ${compact ? "" : `
+          <div class="card-actions">
+            <button class="tiny-button" type="button" data-detail-id="${product.id}" data-track-name="view_detail_${product.id}">Xem</button>
+            <button class="tiny-button" type="button" data-add-id="${product.id}" data-track-name="add_${product.id}">Them</button>
+          </div>
+        `}
+      </div>
+    </article>
+  `;
+}
+
+function renderDeals() {
+  dealRow.innerHTML = products
+    .filter((product) => product.tag === "deal" || product.tag === "best")
+    .slice(0, 6)
+    .map((product) => `
+      <button class="deal-card" type="button" data-detail-id="${product.id}" data-track-name="flash_${product.id}">
+        <img src="${product.image}" alt="${product.name}">
+        <span class="deal-body">
+          <strong>${money(product.price)}</strong>
+          <span class="muted">Da ban ${product.sold}</span>
+        </span>
+      </button>
+    `).join("");
+}
+
+function renderProducts() {
+  const visible = filteredProducts();
+  resultSummary.textContent = `${visible.length} san pham phu hop`;
+  productGrid.innerHTML = visible.map((product) => productCard(product, false)).join("");
+}
+
+function trackCatalogChanged(eventName) {
+  renderProducts();
+
+  const payload = {
+    category: activeCategory,
+    priceMode,
+    tagMode,
+    ratingMode,
+    sortMode,
+    visibleProducts: filteredProducts().length
+  };
+
+  if (eventName === "search_submit" || eventName === "quick_keyword") {
+    window.tracking.trackSearch(searchTerm || "").catch(() => {});
+  } else {
+    window.tracking.trackFilterApply(payload).catch(() => {});
+  }
+}
+
+function openPanel(panel) {
+  panel.classList.add("open");
+  panel.setAttribute("aria-hidden", "false");
+}
+
+function closePanel(panel) {
+  panel.classList.remove("open");
+  panel.setAttribute("aria-hidden", "true");
+}
+
+function showProductDetail(productId) {
+  const product = products.find((item) => item.id === productId);
+  if (!product) return;
+
+  const relatedProducts = products
+    .filter((item) => item.id !== product.id && (item.category === product.category || item.tag === product.tag))
+    .slice(0, 4);
+
+  detailContent.innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-media">
+        <img src="${product.image}" alt="${product.name}">
+        <div class="thumb-row" aria-label="anh san pham phu">
+          <span>anh 1</span>
+          <span>anh 2</span>
+          <span>anh 3</span>
+          <span>Video</span>
+        </div>
+        <div class="detail-section supplier-card">
+          <span class="supplier-avatar">${product.supplier.name.charAt(0)}</span>
+          <div>
+            <strong>${product.supplier.name}</strong>
+            <p class="muted">${product.supplier.location} | ${product.supplier.products} san pham</p>
+          </div>
+          <button class="secondary-button" type="button" data-supplier-name="${product.supplier.name}" data-track-name="visit_supplier">Xem shop</button>
+        </div>
+      </div>
+      <div class="detail-info">
+        <span class="badge">${product.tag}</span>
+        <h2 class="detail-title">${product.name}</h2>
+        <p class="muted">${product.description}</p>
+        <div class="detail-price-box">
+          <span class="price">${money(product.price)}</span>
+          <span class="badge">Voucher -15%</span>
+          <span class="muted">Da ban ${product.sold}</span>
+        </div>
+        <dl class="detail-specs">
+          <div><dt>Danh gia</dt><dd>${product.rating}/5 sao</dd></div>
+          <div><dt>Danh muc</dt><dd>${product.category}</dd></div>
+          <div><dt>Kho hang</dt><dd>${product.stock} san pham</dd></div>
+          <div><dt>Xuat xu</dt><dd>${product.origin}</dd></div>
+        </dl>
+        <div class="detail-section">
+          <strong>Van chuyen & bao hanh</strong>
+          <p class="muted">${product.shipping}. Doi tra 7 ngay cho san pham du dieu kien. Nha cung cap phan hoi ${product.supplier.response} tin nhan.</p>
+        </div>
+        <div class="card-actions">
+          <button class="secondary-button" type="button" data-wishlist-id="${product.id}" data-track-name="wishlist_${product.id}">Yeu thich</button>
+          <button class="primary-button" type="button" data-add-id="${product.id}" data-track-name="detail_add_${product.id}">Them gio</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-section" style="margin-top:18px;">
+      <strong>Mo ta san pham</strong>
+      <p class="muted">${product.description} San pham thuoc gian hang ${product.supplier.name}, co thong tin van chuyen, doi tra va nha cung cap ro rang.</p>
+    </div>
+    <div class="detail-section" style="margin-top:12px;">
+      <strong>San pham lien quan</strong>
+      <div class="related-grid">
+        ${relatedProducts.map((item) => `
+          <button class="related-card" type="button" data-detail-id="${item.id}" data-track-name="related_${item.id}">
+            <img src="${item.image}" alt="${item.name}">
+            <strong>${item.name}</strong>
+            <span class="price">${money(item.price)}</span>
           </button>
-        `;
-      }).join("");
+        `).join("")}
+      </div>
+    </div>
+  `;
 
-      categorySelect.innerHTML = cats.map(function (category) {
-        return `<option value="${category}">${category}</option>`;
-      }).join("");
-    }
+  openPanel(detailPanel);
+  window.tracking.trackProductView(product.id, window.location.pathname, {
+    name: product.name,
+    price: product.price,
+    category: product.category
+  }).catch(() => {});
+}
 
-    function startFlashCountdown() {
-      let remainingSeconds = 2 * 60 * 60 + 18 * 60 + 45;
+function syncCart(apiCart) {
+  cart.clear();
+  apiCart.items.forEach((item) => {
+    const product = products.find((candidate) => candidate.id === item.productId) || {
+      id: item.productId,
+      name: item.nameSnapshot,
+      price: item.priceSnapshot,
+      image: item.imageSnapshot,
+      category: "",
+      tag: "",
+      rating: 0,
+      sold: 0,
+      supplier: { name: "" }
+    };
+    cart.set(item.productId, { product, quantity: item.quantity });
+  });
+}
 
-      function formatTime(value) {
-        return String(value).padStart(2, "0");
+async function loadCart() {
+  const response = await apiFetch(`/api/cart?sessionId=${encodeURIComponent(getSessionId())}`);
+  syncCart(response.data);
+  renderCart();
+}
+
+async function addToCart(productId) {
+  const product = products.find((item) => item.id === productId);
+  if (!product) return;
+
+  const response = await apiFetch("/api/cart/items", {
+    method: "POST",
+    body: JSON.stringify({ sessionId: getSessionId(), productId, quantity: 1 })
+  });
+  syncCart(response.data);
+  renderCart();
+
+  const current = cart.get(productId);
+  window.tracking.trackCustom("add_to_cart", {
+    product_id: product.id,
+    metadata: Object.assign(productPayload(product), {
+      quantity: current ? current.quantity : 1,
+      cartValue: cartValue()
+    })
+  }).catch(() => {});
+}
+
+function cartValue() {
+  return Array.from(cart.values()).reduce((total, item) => total + item.product.price * item.quantity, 0);
+}
+
+function cartSize() {
+  return Array.from(cart.values()).reduce((total, item) => total + item.quantity, 0);
+}
+
+function renderCart() {
+  cartCount.textContent = String(cartSize());
+  cartTotal.textContent = money(cartValue());
+
+  if (cart.size === 0) {
+    cartItems.innerHTML = "<p class=\"muted\">Gio hang dang trong.</p>";
+    return;
+  }
+
+  cartItems.innerHTML = Array.from(cart.values()).map((item) => `
+    <div class="cart-item">
+      <img src="${item.product.image}" alt="${item.product.name}">
+      <div>
+        <strong>${item.product.name}</strong>
+        <p class="muted">${item.quantity} x ${money(item.product.price)}</p>
+      </div>
+      <button class="close-button" type="button" data-remove-id="${item.product.id}" data-track-name="remove_${item.product.id}">-</button>
+    </div>
+  `).join("");
+}
+
+async function openCart() {
+  await loadCart();
+  openPanel(cartPanel);
+}
+
+function startCheckout() {
+  if (cart.size === 0) return;
+  closePanel(cartPanel);
+  successBox.classList.remove("show");
+  openPanel(checkoutPanel);
+  window.tracking.trackCustom("checkout_start", {
+    metadata: { itemCount: cartSize(), cartValue: cartValue() }
+  }).catch(() => {});
+}
+
+async function completeOrder() {
+  const items = Array.from(cart.values());
+  const paymentMethod = document.getElementById("paymentMethod").value;
+
+  const response = await apiFetch("/api/orders", {
+    method: "POST",
+    body: JSON.stringify({
+      sessionId: getSessionId(),
+      paymentMethod
+    })
+  });
+  const order = response.data;
+
+  items.forEach((item) => {
+    window.tracking.trackCustom("purchase_succeeded", {
+      product_id: item.product.id,
+      metadata: {
+        name: item.product.name,
+        price: item.product.price,
+        category: item.product.category,
+        amount: item.product.price * item.quantity,
+        quantity: item.quantity,
+        order_id: order.orderCode,
+        orderCode: order.orderCode,
+        payment_method: paymentMethod
       }
+    }).catch(() => {});
+  });
 
-      function renderCountdown() {
-        const hours = Math.floor(remainingSeconds / 3600);
-        const minutes = Math.floor((remainingSeconds % 3600) / 60);
-        const seconds = remainingSeconds % 60;
-        flashCountdown.textContent = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
-        remainingSeconds = remainingSeconds > 0 ? remainingSeconds - 1 : 2 * 60 * 60 + 18 * 60 + 45;
-      }
+  successBox.classList.add("show");
+  cart.clear();
+  renderCart();
+}
 
-      renderCountdown();
-      window.setInterval(renderCountdown, 1000);
-    }
+document.getElementById("searchForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  searchTerm = searchInput.value;
+  trackCatalogChanged("search_submit");
+  document.getElementById("products").scrollIntoView({ behavior: "smooth" });
+});
 
-    function productCard(product, compact) {
-      return `
-        <article class="product-card" data-track-view="product_${product.id}">
-          <img src="${product.image}" alt="${product.name}">
-          <div class="product-body">
-            <span class="badge">${product.tag}</span>
-            <h3 class="product-name">${product.name}</h3>
-            <strong class="price">${money(product.price)}</strong>
-            <span class="supplier-line">${product.supplier.name}</span>
-            <div class="rating-line">
-              <span>${product.rating} sao</span>
-              <span>Đã bán ${product.sold}</span>
-            </div>
-            ${compact ? "" : `
-              <div class="card-actions">
-                <button class="tiny-button" type="button" data-detail-id="${product.id}" data-track-name="view_detail_${product.id}">Xem</button>
-                <button class="tiny-button" type="button" data-add-id="${product.id}" data-track-name="add_${product.id}">Thêm</button>
-              </div>
-            `}
-          </div>
-        </article>
-      `;
-    }
+document.querySelector(".keyword-row").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-keyword]");
+  if (!button) return;
+  searchTerm = button.getAttribute("data-keyword");
+  searchInput.value = searchTerm;
+  trackCatalogChanged("quick_keyword");
+});
 
-    function renderDeals() {
-      dealRow.innerHTML = products
-        .filter(function (product) {
-          return product.tag === "deal" || product.tag === "best";
-        })
-        .slice(0, 6)
-        .map(function (product) {
-          return `
-            <button class="deal-card" type="button" data-detail-id="${product.id}" data-track-name="flash_${product.id}">
-              <img src="${product.image}" alt="${product.name}">
-              <span class="deal-body">
-                <strong>${money(product.price)}</strong>
-                <span class="muted">Đã bán ${product.sold}</span>
-              </span>
-            </button>
-          `;
-        }).join("");
-    }
+categoryGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  activeCategory = button.getAttribute("data-category");
+  categorySelect.value = activeCategory;
+  trackCatalogChanged("category_filter");
+});
 
-    function renderProducts() {
-      const visible = filteredProducts();
-      resultSummary.textContent = `${visible.length} sản phẩm phù hợp`;
-      productGrid.innerHTML = visible.map(function (product) {
-        return productCard(product, false);
-      }).join("");
-    }
+categorySelect.addEventListener("change", () => {
+  activeCategory = categorySelect.value;
+  trackCatalogChanged("category_select_changed");
+});
 
-    function trackCatalogChanged(eventName, extra) {
-      renderProducts();
-      
-      const payload = {
-        category: activeCategory,
-        priceMode,
-        tagMode,
-        ratingMode,
-        sortMode,
-        visibleProducts: filteredProducts().length
-      };
+priceFilter.addEventListener("change", () => {
+  priceMode = priceFilter.value;
+  trackCatalogChanged("price_filter_changed");
+});
 
-      if (eventName === "search_submit" || eventName === "quick_keyword") {
-        window.tracking.trackSearch(searchTerm || "").catch(function() {});
-      } else {
-        window.tracking.trackFilterApply(payload).catch(function() {});
-      }
-    }
+tagFilter.addEventListener("change", () => {
+  tagMode = tagFilter.value;
+  trackCatalogChanged("tag_filter_changed");
+});
 
-    function openPanel(panel) {
-      panel.classList.add("open");
-      panel.setAttribute("aria-hidden", "false");
-    }
+ratingFilter.addEventListener("change", () => {
+  ratingMode = ratingFilter.value;
+  trackCatalogChanged("rating_filter_changed");
+});
 
-    function closePanel(panel) {
-      panel.classList.remove("open");
-      panel.setAttribute("aria-hidden", "true");
-    }
+sortSelect.addEventListener("change", () => {
+  sortMode = sortSelect.value;
+  trackCatalogChanged("sort_changed");
+});
 
-    function showProductDetail(productId) {
-      const product = products.find(function (item) {
-        return item.id === productId;
-      });
-      if (!product) return;
-      const relatedProducts = products
-        .filter(function (item) {
-          return item.id !== product.id && (item.category === product.category || item.tag === product.tag);
-        })
-        .slice(0, 4);
+tabRow.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-tab]");
+  if (!button) return;
+  tabRow.querySelectorAll(".tab-button").forEach((tab) => {
+    tab.classList.toggle("active", tab === button);
+  });
+  tagMode = button.getAttribute("data-tab");
+  tagFilter.value = tagMode;
+  trackCatalogChanged("recommendation_tab");
+});
 
-      detailContent.innerHTML = `
-        <div class="detail-layout">
-          <div class="detail-media">
-            <img src="${product.image}" alt="${product.name}">
-            <div class="thumb-row" aria-label="ảnh sản phẩm phụ">
-              <span>ảnh 1</span>
-              <span>ảnh 2</span>
-              <span>ảnh 3</span>
-              <span>Video</span>
-            </div>
-            <div class="detail-section supplier-card">
-              <span class="supplier-avatar">${product.supplier.name.charAt(0)}</span>
-              <div>
-                <strong>${product.supplier.name}</strong>
-                <p class="muted">${product.supplier.location} | ${product.supplier.products} sản phẩm</p>
-              </div>
-              <button class="secondary-button" type="button" data-supplier-name="${product.supplier.name}" data-track-name="visit_supplier">Xem shop</button>
-            </div>
-          </div>
-          <div class="detail-info">
-            <span class="badge">${product.tag}</span>
-            <h2 class="detail-title">${product.name}</h2>
-            <p class="muted">${product.description}</p>
-            <div class="detail-price-box">
-              <span class="price">${money(product.price)}</span>
-              <span class="badge">Voucher -15%</span>
-              <span class="muted">Đã bán ${product.sold}</span>
-            </div>
-            <dl class="detail-specs">
-              <div><dt>Đánh giá</dt><dd>${product.rating}/5 sao</dd></div>
-              <div><dt>Danh mục</dt><dd>${product.category}</dd></div>
-              <div><dt>Kho hàng</dt><dd>${product.stock} sản phẩm</dd></div>
-              <div><dt>Xuất xứ</dt><dd>${product.origin}</dd></div>
-            </dl>
-            <div class="detail-section">
-              <strong>Vận chuyển & bảo hành</strong>
-              <p class="muted">${product.shipping}. Đổi trả 7 ngày cho sản phẩm đủ điều kiện. Nhà cung cấp phản hồi ${product.supplier.response} tin nhắn.</p>
-            </div>
-            <div class="card-actions">
-              <button class="secondary-button" type="button" data-wishlist-id="${product.id}" data-track-name="wishlist_${product.id}">Yêu thích</button>
-              <button class="primary-button" type="button" data-add-id="${product.id}" data-track-name="detail_add_${product.id}">Thêm giỏ</button>
-            </div>
-          </div>
-        </div>
-        <div class="detail-section" style="margin-top:18px;">
-          <strong>Mô tả sản phẩm</strong>
-          <p class="muted">${product.description} Sản phẩm thuộc gian hàng ${product.supplier.name}, có thông tin vận chuyển, đổi trả và nhà cung cấp rõ ràng để bạn yên tâm trước khi đặt hàng.</p>
-        </div>
-        <div class="detail-section" style="margin-top:12px;">
-          <strong>Sản phẩm liên quan</strong>
-          <div class="related-grid">
-            ${relatedProducts.map(function (item) {
-              return `
-                <button class="related-card" type="button" data-detail-id="${item.id}" data-track-name="related_${item.id}">
-                  <img src="${item.image}" alt="${item.name}">
-                  <strong>${item.name}</strong>
-                  <span class="price">${money(item.price)}</span>
-                </button>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `;
+document.getElementById("resetFiltersButton").addEventListener("click", () => {
+  searchTerm = "";
+  activeCategory = ALL_CATEGORY;
+  priceMode = "all";
+  tagMode = "all";
+  ratingMode = "all";
+  sortMode = "featured";
+  searchInput.value = "";
+  categorySelect.value = activeCategory;
+  priceFilter.value = priceMode;
+  tagFilter.value = tagMode;
+  ratingFilter.value = ratingMode;
+  sortSelect.value = sortMode;
+  tabRow.querySelectorAll(".tab-button").forEach((tab) => {
+    tab.classList.toggle("active", tab.getAttribute("data-tab") === "all");
+  });
+  trackCatalogChanged("filters_reset");
+});
 
-      openPanel(detailPanel);
-      window.tracking.trackProductView(product.id, window.location.pathname, {
-        name: product.name, price: product.price, category: product.category
-      }).catch(function() {});
-    }
+document.body.addEventListener("click", async (event) => {
+  const detailButton = event.target.closest("[data-detail-id]");
+  const addButton = event.target.closest("[data-add-id]");
+  const removeButton = event.target.closest("[data-remove-id]");
 
-    function addToCart(productId) {
-      const product = products.find(function (item) {
-        return item.id === productId;
-      });
-      if (!product) return;
+  if (detailButton) {
+    const id = detailButton.getAttribute("data-detail-id");
+    const clicked = products.find((product) => product.id === id);
+    window.tracking.trackProductClick(id, window.location.pathname,
+      clicked ? { name: clicked.name, price: clicked.price, category: clicked.category } : {}
+    ).catch(() => {});
+    showProductDetail(id);
+  }
 
-      const current = cart.get(productId) || { product, quantity: 0 };
-      current.quantity += 1;
-      cart.set(productId, current);
-      renderCart();
-      window.tracking.trackCustom("add_to_cart", {
-        product_id: product.id,
-        metadata: Object.assign(productPayload(product), {
-          quantity: current.quantity,
-          cartValue: cartValue()
-        })
-      }).catch(function() {});
-    }
+  if (addButton) {
+    await addToCart(addButton.getAttribute("data-add-id"));
+  }
 
-    function cartValue() {
-      return Array.from(cart.values()).reduce(function (total, item) {
-        return total + item.product.price * item.quantity;
-      }, 0);
-    }
-
-    function cartSize() {
-      return Array.from(cart.values()).reduce(function (total, item) {
-        return total + item.quantity;
-      }, 0);
-    }
-
-    function renderCart() {
-      cartCount.textContent = String(cartSize());
-      cartTotal.textContent = money(cartValue());
-
-      if (cart.size === 0) {
-        cartItems.innerHTML = "<p class=\"muted\">Giỏ hàng đang trống.</p>";
-        return;
-      }
-
-      cartItems.innerHTML = Array.from(cart.values()).map(function (item) {
-        return `
-          <div class="cart-item">
-            <img src="${item.product.image}" alt="${item.product.name}">
-            <div>
-              <strong>${item.product.name}</strong>
-              <p class="muted">${item.quantity} x ${money(item.product.price)}</p>
-            </div>
-            <button class="close-button" type="button" data-remove-id="${item.product.id}" data-track-name="remove_${item.product.id}">-</button>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function openCart() {
-      renderCart();
-      openPanel(cartPanel);
-      // cart_open not supported by tracking API, omit
-    }
-
-    function startCheckout() {
-      if (cart.size === 0) {
-        // checkout_blocked not supported by tracking API, omit
-        return;
-      }
-      closePanel(cartPanel);
-      successBox.classList.remove("show");
-      openPanel(checkoutPanel);
-      window.tracking.trackCustom("checkout_start", { metadata: { itemCount: cartSize(), cartValue: cartValue() } }).catch(function() {});
-    }
-
-    function completeOrder() {
-      const total = cartValue();
-      const items = Array.from(cart.values());
-
-      // Track 1 event per product để revenue ghi đúng theo từng sản phẩm
-      items.forEach(function(item) {
-        window.tracking.trackCustom("purchase_succeeded", {
-          product_id: item.product.id,
-          metadata: {
-            name: item.product.name,
-            price: item.product.price,
-            category: item.product.category,
-            amount: item.product.price * item.quantity,
-            quantity: item.quantity,
-            order_id: "ORDER-" + Date.now(),
-            payment_method: document.getElementById("paymentMethod").value
-          }
-        }).catch(function() {});
-      });
-
-      successBox.classList.add("show");
-      cart.clear();
-      renderCart();
-    }
-
-    document.getElementById("searchForm").addEventListener("submit", function (event) {
-      event.preventDefault();
-      searchTerm = searchInput.value;
-      trackCatalogChanged("search_submit");
-      document.getElementById("products").scrollIntoView({ behavior: "smooth" });
+  if (removeButton) {
+    const productId = removeButton.getAttribute("data-remove-id");
+    const item = cart.get(productId);
+    if (!item) return;
+    const response = await apiFetch(`/api/cart/items/${encodeURIComponent(productId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sessionId: getSessionId(), quantity: item.quantity - 1 })
     });
+    syncCart(response.data);
+    renderCart();
+  }
 
-    document.querySelector(".keyword-row").addEventListener("click", function (event) {
-      const button = event.target.closest("[data-keyword]");
-      if (!button) return;
-      searchTerm = button.getAttribute("data-keyword");
-      searchInput.value = searchTerm;
-      trackCatalogChanged("quick_keyword");
-    });
+  if (event.target.matches("[data-close-panel]")) {
+    closePanel(event.target.closest(".panel"));
+  }
+});
 
-    categoryGrid.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-category]");
-      if (!button) return;
-      activeCategory = button.getAttribute("data-category");
-      categorySelect.value = activeCategory;
-      trackCatalogChanged("category_filter");
-    });
+document.getElementById("openCartButton").addEventListener("click", () => {
+  openCart().catch(console.error);
+});
+document.getElementById("checkoutButton").addEventListener("click", startCheckout);
+document.getElementById("completeOrderButton").addEventListener("click", () => {
+  completeOrder().catch(console.error);
+});
 
-    categorySelect.addEventListener("change", function () {
-      activeCategory = categorySelect.value;
-      trackCatalogChanged("category_select_changed");
-    });
+async function initializeStore() {
+  await loadStoreData();
+  renderCategories();
+  renderDeals();
+  renderProducts();
+  await loadCart();
+  startFlashCountdown();
+}
 
-    priceFilter.addEventListener("change", function () {
-      priceMode = priceFilter.value;
-      trackCatalogChanged("price_filter_changed");
-    });
-
-    tagFilter.addEventListener("change", function () {
-      tagMode = tagFilter.value;
-      trackCatalogChanged("tag_filter_changed");
-    });
-
-    ratingFilter.addEventListener("change", function () {
-      ratingMode = ratingFilter.value;
-      trackCatalogChanged("rating_filter_changed");
-    });
-
-    sortSelect.addEventListener("change", function () {
-      sortMode = sortSelect.value;
-      trackCatalogChanged("sort_changed");
-    });
-
-    tabRow.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-tab]");
-      if (!button) return;
-      tabRow.querySelectorAll(".tab-button").forEach(function (tab) {
-        tab.classList.toggle("active", tab === button);
-      });
-      tagMode = button.getAttribute("data-tab");
-      tagFilter.value = tagMode;
-      trackCatalogChanged("recommendation_tab");
-    });
-
-    document.getElementById("resetFiltersButton").addEventListener("click", function () {
-      searchTerm = "";
-      activeCategory = "Tất cả";
-      priceMode = "all";
-      tagMode = "all";
-      ratingMode = "all";
-      sortMode = "featured";
-      searchInput.value = "";
-      categorySelect.value = activeCategory;
-      priceFilter.value = priceMode;
-      tagFilter.value = tagMode;
-      ratingFilter.value = ratingMode;
-      sortSelect.value = sortMode;
-      tabRow.querySelectorAll(".tab-button").forEach(function (tab) {
-        tab.classList.toggle("active", tab.getAttribute("data-tab") === "all");
-      });
-      trackCatalogChanged("filters_reset");
-    });
-
-    document.body.addEventListener("click", function (event) {
-      const detailButton = event.target.closest("[data-detail-id]");
-      const addButton = event.target.closest("[data-add-id]");
-      const removeButton = event.target.closest("[data-remove-id]");
-      const wishlistButton = event.target.closest("[data-wishlist-id]");
-      const voucherButton = event.target.closest("[data-voucher-code]");
-      const supplierButton = event.target.closest("[data-supplier-name]");
-
-      if (detailButton) {
-        const id = detailButton.getAttribute("data-detail-id");
-        const clicked = products.find(function(p) { return p.id === id; });
-        window.tracking.trackProductClick(id, window.location.pathname,
-          clicked ? { name: clicked.name, price: clicked.price, category: clicked.category } : {}
-        ).catch(function() {});
-        showProductDetail(id);
-      }
-      if (addButton) addToCart(addButton.getAttribute("data-add-id"));
-      if (wishlistButton) {
-        // unsupported by backend -> removed
-      }
-      if (voucherButton) {
-        // unsupported by backend -> removed
-      }
-      if (supplierButton) {
-        // unsupported by backend -> removed
-      }
-      if (removeButton) {
-        const productId = removeButton.getAttribute("data-remove-id");
-        const item = cart.get(productId);
-        if (!item) return;
-        item.quantity -= 1;
-        if (item.quantity <= 0) cart.delete(productId);
-        renderCart();
-      }
-      if (event.target.matches("[data-close-panel]")) closePanel(event.target.closest(".panel"));
-    });
-
-    document.getElementById("openCartButton").addEventListener("click", openCart);
-    document.getElementById("checkoutButton").addEventListener("click", startCheckout);
-    document.getElementById("completeOrderButton").addEventListener("click", completeOrder);
-
-    async function initializeStore() {
-      await loadStoreData();
-      prepareProducts();
-      renderCategories();
-      renderDeals();
-      renderProducts();
-      renderCart();
-      startFlashCountdown();
-
-      products.slice(0, 60).forEach(function (product, index) {
-        // tracking product_impression is not supported by the backend 
-        // -> skipping.
-      });
-    }
-
-    initializeStore().catch(function (error) {
-      console.error(error);
-      resultSummary.textContent = "Không tải được dữ liệu sản phẩm.";
-    });
-
-
+initializeStore().catch((error) => {
+  console.error(error);
+  resultSummary.textContent = "Khong tai duoc du lieu san pham.";
+});

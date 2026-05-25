@@ -1,0 +1,21 @@
+{
+  "name": "markethub-demo",
+  "version": "1.0.0",
+  "description": "MarketHub demo with Express API, MongoDB, and preserved behavior tracking SDK output.",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
+    "seed": "node backend/src/seeds/seed.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
