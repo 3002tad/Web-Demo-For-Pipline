@@ -22,12 +22,14 @@ function initClickTracking() {
     if (!tracked) return;
 
     const trackName = tracked.getAttribute("data-track-name") || "";
-    const hasSemanticTracking = tracked.matches("[data-add-id], [data-detail-id], [data-remove-id]")
+    const hasSemanticTracking = tracked.matches("[data-add-id], [data-buy-now-id], [data-detail-id], [data-remove-id]")
       || trackName === "checkout_start"
       || trackName === "complete_order"
       || trackName === "open_cart"
       || trackName.startsWith("add_")
+      || trackName.startsWith("buy_now_")
       || trackName.startsWith("detail_add_")
+      || trackName.startsWith("detail_buy_now_")
       || trackName.startsWith("view_detail_")
       || trackName.startsWith("remove_");
 

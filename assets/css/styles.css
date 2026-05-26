@@ -640,6 +640,10 @@ h2 {
   gap: 8px;
 }
 
+.buy-now-button {
+  grid-column: 1 / -1;
+}
+
 .primary-button,
 .secondary-button,
 .tiny-button {

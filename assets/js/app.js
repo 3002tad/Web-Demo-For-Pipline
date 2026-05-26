@@ -193,6 +193,7 @@ function productCard(product, compact) {
           <div class="card-actions">
             <button class="tiny-button" type="button" data-detail-id="${product.id}" data-track-name="view_detail_${product.id}">Xem</button>
             <button class="tiny-button" type="button" data-add-id="${product.id}" data-track-name="add_${product.id}">Thêm</button>
+            <button class="tiny-button buy-now-button" type="button" data-buy-now-id="${product.id}" data-track-name="buy_now_${product.id}">Mua ngay</button>
           </div>
         `}
       </div>
@@ -299,6 +300,7 @@ function showProductDetail(productId) {
         <div class="card-actions">
           <button class="secondary-button" type="button" data-wishlist-id="${product.id}" data-track-name="wishlist_${product.id}">Yêu thích</button>
           <button class="primary-button" type="button" data-add-id="${product.id}" data-track-name="detail_add_${product.id}">Thêm giỏ</button>
+          <button class="primary-button buy-now-button" type="button" data-buy-now-id="${product.id}" data-track-name="detail_buy_now_${product.id}">Mua ngay</button>
         </div>
       </div>
     </div>
@@ -371,6 +373,13 @@ async function addToCart(productId) {
       cartValue: cartValue()
     })
   }).catch(() => {});
+}
+
+async function buyNow(productId) {
+  await addToCart(productId);
+  closePanel(detailPanel);
+  closePanel(cartPanel);
+  startCheckout();
 }
 
 function cartValue() {
@@ -534,6 +543,7 @@ document.getElementById("resetFiltersButton").addEventListener("click", () => {
 document.body.addEventListener("click", async (event) => {
   const detailButton = event.target.closest("[data-detail-id]");
   const addButton = event.target.closest("[data-add-id]");
+  const buyNowButton = event.target.closest("[data-buy-now-id]");
   const removeButton = event.target.closest("[data-remove-id]");
 
   if (detailButton) {
@@ -547,6 +557,10 @@ document.body.addEventListener("click", async (event) => {
 
   if (addButton) {
     await addToCart(addButton.getAttribute("data-add-id"));
+  }
+
+  if (buyNowButton) {
+    await buyNow(buyNowButton.getAttribute("data-buy-now-id"));
   }
 
   if (removeButton) {
