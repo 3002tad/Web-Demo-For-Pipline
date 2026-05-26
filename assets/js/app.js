@@ -25,6 +25,8 @@ const tagFilter = document.getElementById("tagFilter");
 const ratingFilter = document.getElementById("ratingFilter");
 const tabRow = document.getElementById("tabRow");
 const cartCount = document.getElementById("cartCount");
+const floatingCartCount = document.getElementById("floatingCartCount");
+const floatingCartButton = document.getElementById("floatingCartButton");
 const cartItems = document.getElementById("cartItems");
 const cartTotal = document.getElementById("cartTotal");
 const cartPanel = document.getElementById("cartPanel");
@@ -32,6 +34,18 @@ const detailPanel = document.getElementById("detailPanel");
 const detailContent = document.getElementById("detailContent");
 const checkoutPanel = document.getElementById("checkoutPanel");
 const successBox = document.getElementById("successBox");
+
+const noopTracking = {
+  trackSearch: () => Promise.resolve(),
+  trackFilterApply: () => Promise.resolve(),
+  trackProductView: () => Promise.resolve(),
+  trackProductClick: () => Promise.resolve(),
+  trackCustom: () => Promise.resolve()
+};
+
+function tracker() {
+  return window.tracking || noopTracking;
+}
 
 function storageGet(key) {
   try {
@@ -173,12 +187,12 @@ function productCard(product, compact) {
         <span class="supplier-line">${product.supplier.name}</span>
         <div class="rating-line">
           <span>${product.rating} sao</span>
-          <span>Da ban ${product.sold}</span>
+          <span>Đã bán ${product.sold}</span>
         </div>
         ${compact ? "" : `
           <div class="card-actions">
             <button class="tiny-button" type="button" data-detail-id="${product.id}" data-track-name="view_detail_${product.id}">Xem</button>
-            <button class="tiny-button" type="button" data-add-id="${product.id}" data-track-name="add_${product.id}">Them</button>
+            <button class="tiny-button" type="button" data-add-id="${product.id}" data-track-name="add_${product.id}">Thêm</button>
           </div>
         `}
       </div>
@@ -195,7 +209,7 @@ function renderDeals() {
         <img src="${product.image}" alt="${product.name}">
         <span class="deal-body">
           <strong>${money(product.price)}</strong>
-          <span class="muted">Da ban ${product.sold}</span>
+          <span class="muted">Đã bán ${product.sold}</span>
         </span>
       </button>
     `).join("");
@@ -203,7 +217,7 @@ function renderDeals() {
 
 function renderProducts() {
   const visible = filteredProducts();
-  resultSummary.textContent = `${visible.length} san pham phu hop`;
+  resultSummary.textContent = `${visible.length} sản phẩm phù hợp`;
   productGrid.innerHTML = visible.map((product) => productCard(product, false)).join("");
 }
 
@@ -220,9 +234,9 @@ function trackCatalogChanged(eventName) {
   };
 
   if (eventName === "search_submit" || eventName === "quick_keyword") {
-    window.tracking.trackSearch(searchTerm || "").catch(() => {});
+    tracker().trackSearch(searchTerm || "").catch(() => {});
   } else {
-    window.tracking.trackFilterApply(payload).catch(() => {});
+    tracker().trackFilterApply(payload).catch(() => {});
   }
 }
 
@@ -248,17 +262,17 @@ function showProductDetail(productId) {
     <div class="detail-layout">
       <div class="detail-media">
         <img src="${product.image}" alt="${product.name}">
-        <div class="thumb-row" aria-label="anh san pham phu">
-          <span>anh 1</span>
-          <span>anh 2</span>
-          <span>anh 3</span>
+        <div class="thumb-row" aria-label="ảnh sản phẩm phụ">
+          <span>ảnh 1</span>
+          <span>ảnh 2</span>
+          <span>ảnh 3</span>
           <span>Video</span>
         </div>
         <div class="detail-section supplier-card">
           <span class="supplier-avatar">${product.supplier.name.charAt(0)}</span>
           <div>
             <strong>${product.supplier.name}</strong>
-            <p class="muted">${product.supplier.location} | ${product.supplier.products} san pham</p>
+            <p class="muted">${product.supplier.location} | ${product.supplier.products} sản phẩm</p>
           </div>
           <button class="secondary-button" type="button" data-supplier-name="${product.supplier.name}" data-track-name="visit_supplier">Xem shop</button>
         </div>
@@ -270,30 +284,30 @@ function showProductDetail(productId) {
         <div class="detail-price-box">
           <span class="price">${money(product.price)}</span>
           <span class="badge">Voucher -15%</span>
-          <span class="muted">Da ban ${product.sold}</span>
+          <span class="muted">Đã bán ${product.sold}</span>
         </div>
         <dl class="detail-specs">
-          <div><dt>Danh gia</dt><dd>${product.rating}/5 sao</dd></div>
-          <div><dt>Danh muc</dt><dd>${product.category}</dd></div>
-          <div><dt>Kho hang</dt><dd>${product.stock} san pham</dd></div>
-          <div><dt>Xuat xu</dt><dd>${product.origin}</dd></div>
+          <div><dt>Đánh giá</dt><dd>${product.rating}/5 sao</dd></div>
+          <div><dt>Danh mục</dt><dd>${product.category}</dd></div>
+          <div><dt>Kho hàng</dt><dd>${product.stock} sản phẩm</dd></div>
+          <div><dt>Xuất xứ</dt><dd>${product.origin}</dd></div>
         </dl>
         <div class="detail-section">
-          <strong>Van chuyen & bao hanh</strong>
-          <p class="muted">${product.shipping}. Doi tra 7 ngay cho san pham du dieu kien. Nha cung cap phan hoi ${product.supplier.response} tin nhan.</p>
+          <strong>Vận chuyển & bảo hành</strong>
+          <p class="muted">${product.shipping}. Đổi trả 7 ngày cho sản phẩm đủ điều kiện. Nhà cung cấp phản hồi ${product.supplier.response} tin nhắn.</p>
         </div>
         <div class="card-actions">
-          <button class="secondary-button" type="button" data-wishlist-id="${product.id}" data-track-name="wishlist_${product.id}">Yeu thich</button>
-          <button class="primary-button" type="button" data-add-id="${product.id}" data-track-name="detail_add_${product.id}">Them gio</button>
+          <button class="secondary-button" type="button" data-wishlist-id="${product.id}" data-track-name="wishlist_${product.id}">Yêu thích</button>
+          <button class="primary-button" type="button" data-add-id="${product.id}" data-track-name="detail_add_${product.id}">Thêm giỏ</button>
         </div>
       </div>
     </div>
     <div class="detail-section" style="margin-top:18px;">
-      <strong>Mo ta san pham</strong>
-      <p class="muted">${product.description} San pham thuoc gian hang ${product.supplier.name}, co thong tin van chuyen, doi tra va nha cung cap ro rang.</p>
+      <strong>Mô tả sản phẩm</strong>
+      <p class="muted">${product.description} Sản phẩm thuộc gian hàng ${product.supplier.name}, có thông tin vận chuyển, đổi trả và nhà cung cấp rõ ràng.</p>
     </div>
     <div class="detail-section" style="margin-top:12px;">
-      <strong>San pham lien quan</strong>
+      <strong>Sản phẩm liên quan</strong>
       <div class="related-grid">
         ${relatedProducts.map((item) => `
           <button class="related-card" type="button" data-detail-id="${item.id}" data-track-name="related_${item.id}">
@@ -307,7 +321,7 @@ function showProductDetail(productId) {
   `;
 
   openPanel(detailPanel);
-  window.tracking.trackProductView(product.id, window.location.pathname, {
+  tracker().trackProductView(product.id, window.location.pathname, {
     name: product.name,
     price: product.price,
     category: product.category
@@ -350,7 +364,7 @@ async function addToCart(productId) {
   renderCart();
 
   const current = cart.get(productId);
-  window.tracking.trackCustom("add_to_cart", {
+  tracker().trackCustom("add_to_cart", {
     product_id: product.id,
     metadata: Object.assign(productPayload(product), {
       quantity: current ? current.quantity : 1,
@@ -368,11 +382,13 @@ function cartSize() {
 }
 
 function renderCart() {
-  cartCount.textContent = String(cartSize());
+  const currentCartSize = String(cartSize());
+  cartCount.textContent = currentCartSize;
+  floatingCartCount.textContent = currentCartSize;
   cartTotal.textContent = money(cartValue());
 
   if (cart.size === 0) {
-    cartItems.innerHTML = "<p class=\"muted\">Gio hang dang trong.</p>";
+    cartItems.innerHTML = "<p class=\"muted\">Giỏ hàng đang trống.</p>";
     return;
   }
 
@@ -398,7 +414,7 @@ function startCheckout() {
   closePanel(cartPanel);
   successBox.classList.remove("show");
   openPanel(checkoutPanel);
-  window.tracking.trackCustom("checkout_start", {
+  tracker().trackCustom("checkout_start", {
     metadata: { itemCount: cartSize(), cartValue: cartValue() }
   }).catch(() => {});
 }
@@ -417,7 +433,7 @@ async function completeOrder() {
   const order = response.data;
 
   items.forEach((item) => {
-    window.tracking.trackCustom("purchase_succeeded", {
+    tracker().trackCustom("purchase_succeeded", {
       product_id: item.product.id,
       metadata: {
         name: item.product.name,
@@ -523,7 +539,7 @@ document.body.addEventListener("click", async (event) => {
   if (detailButton) {
     const id = detailButton.getAttribute("data-detail-id");
     const clicked = products.find((product) => product.id === id);
-    window.tracking.trackProductClick(id, window.location.pathname,
+    tracker().trackProductClick(id, window.location.pathname,
       clicked ? { name: clicked.name, price: clicked.price, category: clicked.category } : {}
     ).catch(() => {});
     showProductDetail(id);
@@ -553,6 +569,9 @@ document.body.addEventListener("click", async (event) => {
 document.getElementById("openCartButton").addEventListener("click", () => {
   openCart().catch(console.error);
 });
+floatingCartButton.addEventListener("click", () => {
+  openCart().catch(console.error);
+});
 document.getElementById("checkoutButton").addEventListener("click", startCheckout);
 document.getElementById("completeOrderButton").addEventListener("click", () => {
   completeOrder().catch(console.error);
@@ -569,5 +588,5 @@ async function initializeStore() {
 
 initializeStore().catch((error) => {
   console.error(error);
-  resultSummary.textContent = "Khong tai duoc du lieu san pham.";
+  resultSummary.textContent = "Không tải được dữ liệu sản phẩm.";
 });

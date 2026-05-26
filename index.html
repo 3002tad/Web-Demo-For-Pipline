@@ -3,83 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MarketHub</title>
+  <title>MarketHub - Ecom Marketplace</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/template-assets/imgs/template/favicon.svg">
+  <link rel="stylesheet" href="/template-assets/css/style.css?v=3.0.0">
   <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
   <div class="topbar">
-    <div class="topbar-inner">
-      <div>
-        <a href="#seller" data-track-name="top_seller">Kênh người bán</a>
-        <span>|</span>
-        <button type="button" data-voucher-code="APP10" data-track-name="top_download_app">Tải ứng dụng</button>
+    <div class="container-topbar">
+      <div class="menu-topbar-left d-none d-xl-block">
+        <ul class="nav-small">
+          <li><a class="font-xs" href="#seller" data-track-name="top_seller">Kênh người bán</a></li>
+          <li><button class="font-xs link-button" type="button" data-voucher-code="APP10" data-track-name="top_download_app">Tải ứng dụng</button></li>
+          <li><button class="font-xs link-button" type="button" data-track-name="top_help">Hỗ trợ</button></li>
+        </ul>
       </div>
-      <div>
-        <button type="button" data-track-name="top_notifications">Thông báo</button>
-        <span>|</span>
-        <button type="button" data-track-name="top_help">Hỗ trợ</button>
+      <div class="info-topbar text-center d-none d-xl-block">
+        <span class="font-xs color-brand-3">Freeship cho đơn từ</span>
+        <span class="font-sm-bold color-success"> 99.000đ</span>
+      </div>
+      <div class="menu-topbar-right">
+        <button class="font-xs link-button" type="button" data-track-name="top_notifications">Thông báo</button>
+        <span class="font-xs color-brand-3">Hotline:</span>
+        <span class="font-sm-bold color-success"> 1800 900</span>
       </div>
     </div>
   </div>
 
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        MarketHub
-        <span>Mua sắm tiện lợi mỗi ngày</span>
-      </div>
-      <div>
-        <form class="search-box" id="searchForm">
-          <input id="searchInput" type="search" placeholder="Tìm flash sale, áo, giày, phụ kiện..." aria-label="Tìm sản phẩm">
-          <button type="submit" data-track-name="search_submit">Tìm kiếm</button>
-        </form>
-        <div class="keyword-row" aria-label="Từ khóa nhanh">
-          <button type="button" data-keyword="giày" data-track-name="quick_kw_giay">giày</button>
-          <button type="button" data-keyword="túi" data-track-name="quick_kw_tui">túi</button>
-          <button type="button" data-keyword="tai nghe" data-track-name="quick_kw_tainghe">tai nghe</button>
-          <button type="button" data-keyword="deal" data-track-name="quick_kw_deal">deal</button>
+  <header class="header">
+    <div class="container">
+      <div class="main-header">
+        <div class="header-left">
+          <div class="header-logo">
+            <a class="d-flex brand-lockup" href="/" data-track-name="logo_home">
+              <span class="brand-mark">M</span>
+              <span class="brand-text">MarketHub</span>
+            </a>
+          </div>
+          <div class="header-search">
+            <div class="box-header-search">
+              <form class="form-search" id="searchForm">
+                <div class="box-category">
+                  <select id="categorySelect" class="select-active" data-track-name="category_select" aria-label="Danh mục"></select>
+                </div>
+                <div class="box-keysearch">
+                  <input class="form-control font-xs" id="searchInput" type="search" placeholder="Tìm sản phẩm, thương hiệu, voucher..." aria-label="Tìm sản phẩm">
+                </div>
+                <button class="btn-search" type="submit" data-track-name="search_submit" aria-label="Tìm kiếm">Tìm</button>
+              </form>
+            </div>
+            <div class="keyword-row" aria-label="Từ khóa nhanh">
+              <button type="button" data-keyword="giày" data-track-name="quick_kw_giay">giày</button>
+              <button type="button" data-keyword="túi" data-track-name="quick_kw_tui">túi</button>
+              <button type="button" data-keyword="tai nghe" data-track-name="quick_kw_tainghe">tai nghe</button>
+              <button type="button" data-keyword="deal" data-track-name="quick_kw_deal">deal</button>
+            </div>
+          </div>
+          <div class="header-shop">
+            <button class="font-lg icon-list icon-account icon-action" type="button" data-track-name="account_menu"><span>Tài khoản</span></button>
+            <button class="font-lg icon-list icon-wishlist icon-action" type="button" data-track-name="wishlist_open"><span>Yêu thích</span><span class="number-item font-xs">5</span></button>
+            <button class="font-lg icon-list icon-cart icon-action" type="button" id="openCartButton" data-track-name="open_cart">
+              <span>Giỏ hàng</span><span class="number-item font-xs" id="cartCount">0</span>
+            </button>
+          </div>
         </div>
       </div>
-      <button class="cart-button" type="button" id="openCartButton" data-track-name="open_cart">
-        Giỏ hàng <span id="cartCount">0</span>
-      </button>
     </div>
   </header>
 
   <main>
     <section class="market-hero" data-track-view="market_hero">
-      <div class="hero-banner">
+      <div class="hero-banner" data-track-view="hero_main_banner">
         <div class="hero-copy">
           <span class="badge">Mega campaign</span>
-          <h1>MarketHub, mua sắm nhanh cho mọi nhu cầu hằng ngày</h1>
-          <p>Khám phá ưu đãi mới, chọn sản phẩm từ các gian hàng uy tín, lưu voucher, thêm vào giỏ và đặt hàng trong vài bước.</p>
+          <h1>MarketHub</h1>
+          <p>Mua sắm nhanh cho mọi nhu cầu hằng ngày, từ đồ công nghệ đến thời trang, voucher và deal sốc theo giờ.</p>
           <a class="primary-button" href="#products" data-track-name="hero_shop_now">Săn deal ngay</a>
         </div>
-        <img src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=900&q=80" alt="">
+        <img src="/template-assets/imgs/page/homepage1/banner.png" alt="MarketHub campaign">
       </div>
       <div class="hero-side">
-        <div class="hero-tile" data-track-view="hero_side_flash">
-          <img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=700&q=80" alt="">
+        <button class="hero-tile" type="button" data-track-name="hero_side_flash" data-track-view="hero_side_flash">
+          <img src="/template-assets/imgs/page/homepage1/banner-small-1.png" alt="">
           <strong>Flash sale mỗi giờ</strong>
-        </div>
-        <div class="hero-tile" data-track-view="hero_side_voucher">
-          <img src="https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=700&q=80" alt="">
+        </button>
+        <button class="hero-tile" type="button" data-track-name="hero_side_voucher" data-track-view="hero_side_voucher">
+          <img src="/template-assets/imgs/page/homepage1/banner-small-2.png" alt="">
           <strong>Voucher freeship</strong>
-        </div>
+        </button>
       </div>
     </section>
 
     <section class="services" data-track-view="service_shortcuts">
-      <button class="service-card" type="button" data-track-name="service_freeship"><span>F</span>Freeship</button>
-      <button class="service-card" type="button" data-track-name="service_flash"><span>%</span>Flash Sale</button>
-      <button class="service-card" type="button" data-track-name="service_mall"><span>M</span>MarketHub Mall</button>
-      <button class="service-card" type="button" data-track-name="service_coin"><span>C</span>Xu thưởng</button>
-      <button class="service-card" type="button" data-track-name="service_live"><span>L</span>Live Sale</button>
+      <button class="service-card" type="button" data-track-name="service_freeship"><img src="/template-assets/imgs/template/delivery.svg" alt="">Freeship</button>
+      <button class="service-card" type="button" data-track-name="service_flash"><img src="/template-assets/imgs/template/label.svg" alt="">Flash Sale</button>
+      <button class="service-card" type="button" data-track-name="service_mall"><img src="/template-assets/imgs/template/devices.svg" alt="">MarketHub Mall</button>
+      <button class="service-card" type="button" data-track-name="service_coin"><img src="/template-assets/imgs/template/clock.svg" alt="">Xu thưởng</button>
+      <button class="service-card" type="button" data-track-name="service_live"><img src="/template-assets/imgs/template/driver.svg" alt="">Giao nhanh</button>
     </section>
 
     <section class="panel-card" id="categories" data-track-view="category_section">
       <div class="section-head">
-        <h2>Danh mục</h2>
+        <div>
+          <span class="section-label">Shop by category</span>
+          <h2>Danh mục nổi bật</h2>
+        </div>
         <span class="muted">Chọn danh mục để lọc sản phẩm</span>
       </div>
       <div class="category-grid" id="categoryGrid"></div>
@@ -87,7 +115,10 @@
 
     <section class="panel-card" id="flashSale" data-track-view="flash_sale_section">
       <div class="section-head">
-        <h2>Flash Sale</h2>
+        <div>
+          <span class="section-label">Today deals</span>
+          <h2>Flash Sale</h2>
+        </div>
         <strong class="sale-countdown">Kết thúc trong <span id="flashCountdown">02:18:45</span></strong>
       </div>
       <div class="deal-row" id="dealRow"></div>
@@ -95,7 +126,10 @@
 
     <section class="panel-card" data-track-view="voucher_section">
       <div class="section-head">
-        <h2>Kho voucher</h2>
+        <div>
+          <span class="section-label">Coupons</span>
+          <h2>Kho voucher</h2>
+        </div>
         <span class="muted">Lưu voucher để dùng khi thanh toán</span>
       </div>
       <div class="voucher-row">
@@ -110,10 +144,6 @@
       <div class="catalog-shell">
         <aside class="sidebar" data-track-view="catalog_sidebar">
           <strong>Bộ lọc tìm kiếm</strong>
-          <label>
-            Danh mục
-            <select id="categorySelect" data-track-name="category_select"></select>
-          </label>
           <label>
             Khoảng giá
             <select id="priceFilter" data-track-name="price_filter">
@@ -147,6 +177,7 @@
         <div class="product-area">
           <div class="sort-row">
             <div>
+              <span class="section-label">Recommended</span>
               <h2>Gợi ý hôm nay</h2>
               <p class="muted" id="resultSummary">0 sản phẩm</p>
             </div>
@@ -170,11 +201,17 @@
     </section>
   </main>
 
+  <button class="floating-cart-button" type="button" id="floatingCartButton" data-track-name="open_cart" aria-label="Mở giỏ hàng">
+    <span class="floating-cart-icon" aria-hidden="true"></span>
+    <span class="floating-cart-copy">Giỏ hàng</span>
+    <strong id="floatingCartCount">0</strong>
+  </button>
+
   <div class="panel" id="detailPanel" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
       <div class="panel-header">
         <strong id="detailTitle">Chi tiết sản phẩm</strong>
-        <button class="close-button" type="button" data-close-panel>X</button>
+        <button class="close-button" type="button" data-close-panel aria-label="Đóng">X</button>
       </div>
       <div class="panel-content" id="detailContent"></div>
     </div>
@@ -184,7 +221,7 @@
     <aside class="drawer" aria-label="Giỏ hàng">
       <div class="panel-header">
         <strong>Giỏ hàng</strong>
-        <button class="close-button" type="button" data-close-panel>X</button>
+        <button class="close-button" type="button" data-close-panel aria-label="Đóng">X</button>
       </div>
       <div class="panel-content" id="cartItems"></div>
       <div class="panel-footer">
@@ -198,7 +235,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
       <div class="panel-header">
         <strong id="checkoutTitle">Thanh toán</strong>
-        <button class="close-button" type="button" data-close-panel>X</button>
+        <button class="close-button" type="button" data-close-panel aria-label="Đóng">X</button>
       </div>
       <div class="panel-content">
         <div class="checkout-steps">

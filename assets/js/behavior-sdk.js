@@ -59,7 +59,10 @@ export function createBehaviorSdk(options = {}) {
         keepalive: true,
       });
       if (!res.ok) throw new Error(`track failed ${res.status}`);
-      return await res.json();
+      if (res.status === 204) return null;
+
+      const text = await res.text();
+      return text ? JSON.parse(text) : null;
     } catch(err) {
       console.error(err);
     }
