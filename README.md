@@ -23,8 +23,15 @@ Default `.env` values:
 ```env
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/markethub_demo
-TRACKING_FORWARD_URL=http://lap1:3100/track
+TRACKING_FORWARD_URL=http://lap1:31000/track
 TRACKING_DEBUG_STORE=true
+JWT_ACCESS_SECRET=change-me-access-secret
+JWT_REFRESH_SECRET=change-me-refresh-secret
+JWT_ACCESS_EXPIRES=15m
+JWT_REFRESH_EXPIRES=7d
+AUTH_COOKIE_NAME=markethub_refresh_token
+AUTH_COOKIE_SECURE=false
+AUTH_COOKIE_SAMESITE=lax
 ```
 
 ## Run MongoDB
@@ -43,7 +50,14 @@ Or run a local MongoDB instance on `mongodb://localhost:27017`.
 npm run seed
 ```
 
-The seed script clears demo collections for products, categories, suppliers, carts, demo orders, and tracking debug events, then reloads data from `data/products.json`, `data/categories.json`, and `data/suppliers.json`. It expands the product catalog to 500 demo products in the backend seed process.
+The seed script clears demo collections for products, categories, suppliers, carts, demo orders, and tracking debug events, then reloads data from `data/products.json`, `data/categories.json`, and `data/suppliers.json`.
+
+The backend seed expands the catalog to **500 products** with a balanced mix:
+- 70% long-tail
+- 20% mid-tier
+- 10% best-seller
+
+Generated products are diversified by category, supplier/brand prefix, material, variant, color, price band, and use-case text to avoid duplicate-looking cards and improve analytics realism.
 
 ## Run
 
@@ -73,6 +87,11 @@ http://localhost:3000
 - `POST /api/orders`
 - `GET /api/orders/:orderCode`
 - `POST /track`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
 
 API responses use:
 

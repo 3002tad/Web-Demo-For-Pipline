@@ -1,7 +1,8 @@
 import { createBehaviorSdk } from "./behavior-sdk.js";
 
 const tracking = createBehaviorSdk({
-  endpoint: window.location.origin,
+  // Send to local backend /track (sdk appends "/track" internally).
+  endpoint: window.__TRACKING_ENDPOINT__ || window.location.origin,
   debug: true,
 });
 

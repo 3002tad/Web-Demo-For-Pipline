@@ -1,5 +1,6 @@
 const ANON_KEY = "pipeline_anonymous_id";
 const SESS_KEY = "pipeline_session_id";
+const TRACKING_QUEUE_KEY = "tracking_event_queue_v1";
 
 function randomId(prefix) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
@@ -14,9 +15,10 @@ function storageSet(key, value) {
 }
 
 export function createBehaviorSdk(options = {}) {
-  const endpoint = (options.endpoint || "http://lap1:3100").replace(/\/$/, "");
+  const endpoint = (options.endpoint || "http://lap1:31000").replace(/\/$/, "");
   const debug = Boolean(options.debug);
   let userId = options.userId ?? null;
+  let flushingQueue = false;
 
   function getAnonymousId() {
     let id = storageGet(ANON_KEY);
@@ -49,22 +51,75 @@ export function createBehaviorSdk(options = {}) {
     };
   }
 
+  function queueGet() {
+    try {
+      const raw = localStorage.getItem(TRACKING_QUEUE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function queueSet(items) {
+    try {
+      localStorage.setItem(TRACKING_QUEUE_KEY, JSON.stringify(items.slice(0, 500)));
+    } catch {
+      // Best effort queue.
+    }
+  }
+
+  function queuePush(event) {
+    const items = queueGet();
+    items.push(event);
+    queueSet(items);
+  }
+
+  async function sendNow(event) {
+    const res = await fetch(`${endpoint}/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`track failed ${res.status}`);
+    if (res.status === 204) return null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  async function flushQueue() {
+    if (flushingQueue) return;
+    if (!navigator.onLine) return;
+    flushingQueue = true;
+    try {
+      const items = queueGet();
+      if (!items.length) return;
+      const remain = [];
+      for (const event of items) {
+        try {
+          await sendNow(event);
+        } catch {
+          remain.push(event);
+        }
+      }
+      queueSet(remain);
+    } finally {
+      flushingQueue = false;
+    }
+  }
+
   async function send(event) {
     if (debug) console.debug("[behavior-sdk]", event);
     try {
-      const res = await fetch(`${endpoint}/track`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event),
-        keepalive: true,
-      });
-      if (!res.ok) throw new Error(`track failed ${res.status}`);
-      if (res.status === 204) return null;
-
-      const text = await res.text();
-      return text ? JSON.parse(text) : null;
-    } catch(err) {
-      console.error(err);
+      const result = await sendNow(event);
+      flushQueue().catch(() => {});
+      return result;
+    } catch (err) {
+      queuePush(event);
+      if (debug) {
+        console.warn("tracking queued (offline or request failed):", err.message);
+      }
+      return null;
     }
   }
 
@@ -98,6 +153,8 @@ export function createBehaviorSdk(options = {}) {
     },
     initAutoPageView() {
       if (typeof window === "undefined") return;
+      flushQueue().catch(() => {});
+      window.addEventListener("online", () => { flushQueue().catch(() => {}); });
       this.trackPageView(window.location.pathname).catch(() => {});
       let maxScroll = 0;
       window.addEventListener("scroll", () => {

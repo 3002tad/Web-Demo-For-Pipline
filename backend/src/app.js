@@ -1,8 +1,10 @@
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 
+const authRoutes = require("./modules/auth/auth.routes");
 const productRoutes = require("./modules/products/product.routes");
 const categoryRoutes = require("./modules/categories/category.routes");
 const supplierRoutes = require("./modules/suppliers/supplier.routes");
@@ -18,8 +20,10 @@ const rootDir = path.resolve(__dirname, "../..");
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" }));
+app.use(cookieParser());
 
 app.use("/track", trackingRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/suppliers", supplierRoutes);

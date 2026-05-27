@@ -3,6 +3,7 @@ let categoryImages = {};
 const cart = new Map();
 
 const SESSION_KEY = "pipeline_session_id";
+const AUTH_STATE_KEY = "markethub_auth_state";
 const ALL_CATEGORY = "Tat ca";
 
 let searchTerm = "";
@@ -11,6 +12,8 @@ let priceMode = "all";
 let tagMode = "all";
 let ratingMode = "all";
 let sortMode = "featured";
+let checkoutStartedAt = null;
+let purchaseCompleted = false;
 
 const categoryGrid = document.getElementById("categoryGrid");
 const categorySelect = document.getElementById("categorySelect");
@@ -34,6 +37,7 @@ const detailPanel = document.getElementById("detailPanel");
 const detailContent = document.getElementById("detailContent");
 const checkoutPanel = document.getElementById("checkoutPanel");
 const successBox = document.getElementById("successBox");
+const accountButton = document.querySelector('[data-track-name="account_menu"]');
 
 const noopTracking = {
   trackSearch: () => Promise.resolve(),
@@ -45,6 +49,42 @@ const noopTracking = {
 
 function tracker() {
   return window.tracking || noopTracking;
+}
+
+function getAuthState() {
+  try {
+    const raw = localStorage.getItem(AUTH_STATE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setAuthState(state) {
+  try {
+    localStorage.setItem(AUTH_STATE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+}
+
+function clearAuthState() {
+  try {
+    localStorage.removeItem(AUTH_STATE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+let authState = getAuthState();
+
+function updateAuthUi() {
+  if (!accountButton) return;
+  if (authState?.user?.name) {
+    accountButton.innerHTML = `<span>${authState.user.name}</span>`;
+  } else {
+    accountButton.innerHTML = "<span>Tài khoản</span>";
+  }
 }
 
 function storageGet(key) {
@@ -60,19 +100,131 @@ function getSessionId() {
 }
 
 async function apiFetch(url, options = {}) {
+  const withAuthHeaders = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+  if (authState?.accessToken) {
+    withAuthHeaders.Authorization = `Bearer ${authState.accessToken}`;
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    }
+    credentials: "include",
+    headers: withAuthHeaders
   });
+
+  if (response.status === 401 && authState?.accessToken) {
+    const refreshed = await tryRefreshToken();
+    if (refreshed) {
+      return apiFetch(url, options);
+    }
+  }
 
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status}`);
   }
 
   return response.json();
+}
+
+async function tryRefreshToken() {
+  try {
+    const res = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) {
+      clearAuthState();
+      authState = null;
+      updateAuthUi();
+      tracker().setUserId(null);
+      return false;
+    }
+    const payload = await res.json();
+    authState = {
+      accessToken: payload.data.accessToken,
+      user: payload.data.user
+    };
+    setAuthState(authState);
+    updateAuthUi();
+    tracker().setUserId(authState.user.id);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function loginFlow() {
+  const email = window.prompt("Nhập email đăng nhập:");
+  if (!email) return;
+  const password = window.prompt("Nhập mật khẩu:");
+  if (!password) return;
+
+  let res = await fetch("/api/auth/login", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  if (res.status === 401) {
+    const shouldRegister = window.confirm("Tài khoản chưa có hoặc sai mật khẩu. Tạo tài khoản mới?");
+    if (!shouldRegister) return;
+    const name = window.prompt("Nhập tên hiển thị:", email.split("@")[0] || "User");
+    if (!name) return;
+    const registerRes = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name })
+    });
+    if (!registerRes.ok) {
+      alert("Không thể tạo tài khoản. Vui lòng thử lại.");
+      return;
+    }
+    res = await fetch("/api/auth/login", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+  }
+
+  if (!res.ok) {
+    alert("Đăng nhập thất bại.");
+    return;
+  }
+  const payload = await res.json();
+  authState = {
+    accessToken: payload.data.accessToken,
+    user: payload.data.user
+  };
+  setAuthState(authState);
+  updateAuthUi();
+  tracker().setUserId(authState.user.id);
+  tracker().trackCustom("auth_login", {
+    metadata: { user_id: authState.user.id, email: authState.user.email }
+  }).catch(() => {});
+}
+
+async function logoutFlow() {
+  if (!authState) return;
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authState.accessToken}`
+    }
+  });
+  tracker().trackCustom("auth_logout", {
+    metadata: { user_id: authState.user.id, email: authState.user.email }
+  }).catch(() => {});
+  clearAuthState();
+  authState = null;
+  updateAuthUi();
+  tracker().setUserId(null);
 }
 
 function money(value) {
@@ -423,6 +575,8 @@ function startCheckout() {
   closePanel(cartPanel);
   successBox.classList.remove("show");
   openPanel(checkoutPanel);
+  checkoutStartedAt = Date.now();
+  purchaseCompleted = false;
   tracker().trackCustom("checkout_start", {
     metadata: { itemCount: cartSize(), cartValue: cartValue() }
   }).catch(() => {});
@@ -436,6 +590,7 @@ async function completeOrder() {
     method: "POST",
     body: JSON.stringify({
       sessionId: getSessionId(),
+      userId: authState?.user?.id || null,
       paymentMethod
     })
   });
@@ -460,6 +615,8 @@ async function completeOrder() {
   successBox.classList.add("show");
   cart.clear();
   renderCart();
+  purchaseCompleted = true;
+  checkoutStartedAt = null;
 }
 
 document.getElementById("searchForm").addEventListener("submit", (event) => {
@@ -573,10 +730,34 @@ document.body.addEventListener("click", async (event) => {
     });
     syncCart(response.data);
     renderCart();
+    tracker().trackCustom("remove_from_cart", {
+      product_id: item.product.id,
+      metadata: Object.assign(productPayload(item.product), {
+        quantity_before: item.quantity,
+        quantity_after: Math.max(item.quantity - 1, 0),
+        cartValue: cartValue()
+      })
+    }).catch(() => {});
   }
 
   if (event.target.matches("[data-close-panel]")) {
-    closePanel(event.target.closest(".panel"));
+    const panel = event.target.closest(".panel");
+    if (
+      panel?.id === "checkoutPanel"
+      && cart.size > 0
+      && checkoutStartedAt
+      && !purchaseCompleted
+    ) {
+      tracker().trackCustom("cart_abandoned", {
+        metadata: {
+          reason: "checkout_closed",
+          itemCount: cartSize(),
+          cartValue: cartValue(),
+          checkoutStartedAt: new Date(checkoutStartedAt).toISOString()
+        }
+      }).catch(() => {});
+    }
+    closePanel(panel);
   }
 });
 
@@ -588,10 +769,37 @@ floatingCartButton.addEventListener("click", () => {
 });
 document.getElementById("checkoutButton").addEventListener("click", startCheckout);
 document.getElementById("completeOrderButton").addEventListener("click", () => {
-  completeOrder().catch(console.error);
+  completeOrder().catch((error) => {
+    tracker().trackCustom("payment_failed", {
+      metadata: {
+        reason: error?.message || "checkout_error",
+        itemCount: cartSize(),
+        cartValue: cartValue(),
+        payment_method: document.getElementById("paymentMethod")?.value || "unknown"
+      }
+    }).catch(() => {});
+    console.error(error);
+  });
+});
+
+window.addEventListener("beforeunload", () => {
+  if (cart.size > 0 && checkoutStartedAt && !purchaseCompleted) {
+    tracker().trackCustom("cart_abandoned", {
+      metadata: {
+        reason: "page_unload",
+        itemCount: cartSize(),
+        cartValue: cartValue(),
+        checkoutStartedAt: new Date(checkoutStartedAt).toISOString()
+      }
+    }).catch(() => {});
+  }
 });
 
 async function initializeStore() {
+  updateAuthUi();
+  if (authState?.user?.id) {
+    tracker().setUserId(authState.user.id);
+  }
   await loadStoreData();
   renderCategories();
   renderDeals();
@@ -604,3 +812,16 @@ initializeStore().catch((error) => {
   console.error(error);
   resultSummary.textContent = "Không tải được dữ liệu sản phẩm.";
 });
+
+if (accountButton) {
+  accountButton.addEventListener("click", async () => {
+    if (authState?.user?.id) {
+      const shouldLogout = window.confirm(`Đăng xuất tài khoản ${authState.user.name}?`);
+      if (shouldLogout) {
+        await logoutFlow();
+      }
+      return;
+    }
+    await loginFlow();
+  });
+}
