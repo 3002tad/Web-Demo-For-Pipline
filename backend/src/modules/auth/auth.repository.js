@@ -1,19 +1,7 @@
-const AuthUser = require("./auth.model");
+const userRepository = require("../users/user.repository");
 
-function findByEmail(email) {
-  return AuthUser.findOne({ email: String(email).toLowerCase().trim() });
-}
-
-function findById(id) {
-  return AuthUser.findById(id);
-}
-
-function createUser(data) {
-  return AuthUser.create(data);
-}
-
-function save(user) {
-  return user.save();
-}
-
-module.exports = { findByEmail, findById, createUser, save };
+module.exports = {
+  findUserByEmail: userRepository.findByEmail,
+  findUserById: userRepository.findById,
+  createUser: userRepository.createUser
+};

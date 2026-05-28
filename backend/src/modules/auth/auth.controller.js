@@ -2,15 +2,7 @@ const asyncHandler = require("../../common/utils/async-handler");
 const response = require("../../common/utils/response");
 const env = require("../../config/env");
 const authService = require("./auth.service");
-
-function cookieOptions() {
-  return {
-    httpOnly: true,
-    secure: env.authCookieSecure,
-    sameSite: env.authCookieSameSite,
-    path: "/",
-  };
-}
+const authUtils = require("./auth.utils");
 
 const register = asyncHandler(async (req, res) => {
   const user = await authService.register(req.body);
@@ -18,27 +10,18 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.login(req.body);
-  res.cookie(env.authCookieName, refreshToken, cookieOptions());
-  response.ok(res, { user, accessToken });
-});
-
-const refresh = asyncHandler(async (req, res) => {
-  const token = req.cookies?.[env.authCookieName];
-  const { user, accessToken, refreshToken } = await authService.refresh(token);
-  res.cookie(env.authCookieName, refreshToken, cookieOptions());
-  response.ok(res, { user, accessToken });
-});
-
-const logout = asyncHandler(async (req, res) => {
-  await authService.logout(req.user?.id);
-  res.clearCookie(env.authCookieName, cookieOptions());
-  response.ok(res, { success: true });
-});
-
-const me = asyncHandler(async (req, res) => {
-  const user = await authService.getMe(req.user.id);
+  const { user, token } = await authService.login(req.body);
+  res.cookie(env.authCookieName, token, authUtils.authCookieOptions());
   response.ok(res, { user });
 });
 
-module.exports = { register, login, refresh, logout, me };
+const logout = asyncHandler(async (req, res) => {
+  res.clearCookie(env.authCookieName, authUtils.clearCookieOptions());
+  res.json({ success: true, message: "Logged out" });
+});
+
+const me = asyncHandler(async (req, res) => {
+  response.ok(res, { user: req.user });
+});
+
+module.exports = { register, login, logout, me };

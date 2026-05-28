@@ -3,8 +3,10 @@ let categoryImages = {};
 const cart = new Map();
 
 const SESSION_KEY = "pipeline_session_id";
+const ANONYMOUS_KEY = "pipeline_anonymous_id";
 const AUTH_STATE_KEY = "markethub_auth_state";
 const ALL_CATEGORY = "Tat ca";
+const FALLBACK_IMAGE = "/template-assets/imgs/page/homepage1/computer.png";
 
 let searchTerm = "";
 let activeCategory = ALL_CATEGORY;
@@ -38,13 +40,26 @@ const detailContent = document.getElementById("detailContent");
 const checkoutPanel = document.getElementById("checkoutPanel");
 const successBox = document.getElementById("successBox");
 const accountButton = document.querySelector('[data-track-name="account_menu"]');
+const openPurchasedButton = document.getElementById("openPurchasedButton");
+const authPanel = document.getElementById("authPanel");
+const authLoginButton = document.getElementById("authLoginButton");
+const authRegisterButton = document.getElementById("authRegisterButton");
+const authLogoutButton = document.getElementById("authLogoutButton");
+const authUserSummary = document.getElementById("authUserSummary");
+const purchasedPanel = document.getElementById("purchasedPanel");
+const purchasedList = document.getElementById("purchasedList");
+const purchasedSummary = document.getElementById("purchasedSummary");
+const refreshPurchasedButton = document.getElementById("refreshPurchasedButton");
 
 const noopTracking = {
   trackSearch: () => Promise.resolve(),
   trackFilterApply: () => Promise.resolve(),
   trackProductView: () => Promise.resolve(),
   trackProductClick: () => Promise.resolve(),
-  trackCustom: () => Promise.resolve()
+  trackPageView: () => Promise.resolve(),
+  trackCustom: () => Promise.resolve(),
+  setUserId: () => {},
+  clearUserId: () => {}
 };
 
 function tracker() {
@@ -62,7 +77,9 @@ function getAuthState() {
 
 function setAuthState(state) {
   try {
-    localStorage.setItem(AUTH_STATE_KEY, JSON.stringify(state));
+    if (state) {
+      localStorage.setItem(AUTH_STATE_KEY, JSON.stringify({ user: state.user }));
+    }
   } catch {
     // ignore
   }
@@ -78,13 +95,21 @@ function clearAuthState() {
 
 let authState = getAuthState();
 
-function updateAuthUi() {
-  if (!accountButton) return;
-  if (authState?.user?.name) {
-    accountButton.innerHTML = `<span>${authState.user.name}</span>`;
-  } else {
-    accountButton.innerHTML = "<span>Tài khoản</span>";
-  }
+document.addEventListener("error", (event) => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || image.dataset.fallbackApplied === "true") return;
+  image.dataset.fallbackApplied = "true";
+  image.src = FALLBACK_IMAGE;
+}, true);
+
+function repairBrokenImages(root = document) {
+  root.querySelectorAll("img").forEach((image) => {
+    if (image.dataset.fallbackApplied === "true") return;
+    if (image.complete && image.naturalWidth === 0) {
+      image.dataset.fallbackApplied = "true";
+      image.src = FALLBACK_IMAGE;
+    }
+  });
 }
 
 function storageGet(key) {
@@ -99,14 +124,29 @@ function getSessionId() {
   return storageGet(SESSION_KEY) || "anonymous-browser-session";
 }
 
+function getAnonymousId() {
+  return storageGet(ANONYMOUS_KEY) || null;
+}
+
+function setTrackingUser(userId) {
+  if (userId) {
+    tracker().setUserId?.(userId);
+    return;
+  }
+
+  if (tracker().clearUserId) {
+    tracker().clearUserId();
+    return;
+  }
+
+  tracker().setUserId?.(null);
+}
+
 async function apiFetch(url, options = {}) {
   const withAuthHeaders = {
     "Content-Type": "application/json",
     ...(options.headers || {})
   };
-  if (authState?.accessToken) {
-    withAuthHeaders.Authorization = `Bearer ${authState.accessToken}`;
-  }
 
   const response = await fetch(url, {
     ...options,
@@ -114,11 +154,11 @@ async function apiFetch(url, options = {}) {
     headers: withAuthHeaders
   });
 
-  if (response.status === 401 && authState?.accessToken) {
-    const refreshed = await tryRefreshToken();
-    if (refreshed) {
-      return apiFetch(url, options);
-    }
+  if (response.status === 401 && authState?.user?.id) {
+    clearAuthState();
+    authState = null;
+    updateAuthUi();
+    setTrackingUser(null);
   }
 
   if (!response.ok) {
@@ -128,31 +168,20 @@ async function apiFetch(url, options = {}) {
   return response.json();
 }
 
-async function tryRefreshToken() {
-  try {
-    const res = await fetch("/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!res.ok) {
-      clearAuthState();
-      authState = null;
-      updateAuthUi();
-      tracker().setUserId(null);
-      return false;
-    }
-    const payload = await res.json();
-    authState = {
-      accessToken: payload.data.accessToken,
-      user: payload.data.user
-    };
-    setAuthState(authState);
-    updateAuthUi();
-    tracker().setUserId(authState.user.id);
-    return true;
-  } catch {
-    return false;
+function updateAuthUi() {
+  if (!accountButton) return;
+  if (authState?.user?.name) {
+    accountButton.innerHTML = `<span>${authState.user.name}</span>`;
+    authUserSummary.textContent = `Bạn đang đăng nhập bằng ${authState.user.email}.`;
+    authLoginButton?.classList.add("is-hidden");
+    authRegisterButton?.classList.add("is-hidden");
+    authLogoutButton?.classList.remove("is-hidden");
+  } else {
+    accountButton.innerHTML = "<span>Tài khoản</span>";
+    authUserSummary.textContent = "Đăng nhập hoặc tạo tài khoản để đồng bộ hành vi mua sắm.";
+    authLoginButton?.classList.remove("is-hidden");
+    authRegisterButton?.classList.remove("is-hidden");
+    authLogoutButton?.classList.add("is-hidden");
   }
 }
 
@@ -162,50 +191,67 @@ async function loginFlow() {
   const password = window.prompt("Nhập mật khẩu:");
   if (!password) return;
 
-  let res = await fetch("/api/auth/login", {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
   });
 
-  if (res.status === 401) {
-    const shouldRegister = window.confirm("Tài khoản chưa có hoặc sai mật khẩu. Tạo tài khoản mới?");
-    if (!shouldRegister) return;
-    const name = window.prompt("Nhập tên hiển thị:", email.split("@")[0] || "User");
-    if (!name) return;
-    const registerRes = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name })
-    });
-    if (!registerRes.ok) {
-      alert("Không thể tạo tài khoản. Vui lòng thử lại.");
-      return;
-    }
-    res = await fetch("/api/auth/login", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-  }
-
   if (!res.ok) {
     alert("Đăng nhập thất bại.");
     return;
   }
+
   const payload = await res.json();
-  authState = {
-    accessToken: payload.data.accessToken,
-    user: payload.data.user
-  };
+  authState = { user: payload.data.user };
   setAuthState(authState);
   updateAuthUi();
-  tracker().setUserId(authState.user.id);
-  tracker().trackCustom("auth_login", {
-    metadata: { user_id: authState.user.id, email: authState.user.email }
-  }).catch(() => {});
+  setTrackingUser(authState.user.id);
+}
+
+async function registerFlow() {
+  const email = window.prompt("Nhập email đăng ký:");
+  if (!email) return;
+  const password = window.prompt("Tạo mật khẩu:");
+  if (!password) return;
+  const name = window.prompt("Nhập tên hiển thị:", email.split("@")[0] || "User");
+  if (!name) return;
+
+  const registerRes = await fetch("/api/auth/register", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, name })
+  });
+
+  if (registerRes.status === 409) {
+    alert("Email đã tồn tại. Vui lòng đăng nhập.");
+    return;
+  }
+
+  if (!registerRes.ok) {
+    alert("Không thể tạo tài khoản. Vui lòng thử lại.");
+    return;
+  }
+
+  const loginRes = await fetch("/api/auth/login", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  if (!loginRes.ok) {
+    alert("Tạo tài khoản thành công, nhưng đăng nhập tự động thất bại.");
+    return;
+  }
+
+  const payload = await loginRes.json();
+  authState = { user: payload.data.user };
+  setAuthState(authState);
+  updateAuthUi();
+  setTrackingUser(authState.user.id);
 }
 
 async function logoutFlow() {
@@ -213,18 +259,44 @@ async function logoutFlow() {
   await fetch("/api/auth/logout", {
     method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authState.accessToken}`
-    }
+    headers: { "Content-Type": "application/json" }
   });
-  tracker().trackCustom("auth_logout", {
-    metadata: { user_id: authState.user.id, email: authState.user.email }
-  }).catch(() => {});
   clearAuthState();
   authState = null;
   updateAuthUi();
-  tracker().setUserId(null);
+  setTrackingUser(null);
+}
+
+async function restoreAuthSession() {
+  if (authState?.user?.id) {
+    setTrackingUser(authState.user.id);
+    updateAuthUi();
+  }
+
+  try {
+    const res = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (res.status === 401) {
+      clearAuthState();
+      authState = null;
+      updateAuthUi();
+      setTrackingUser(null);
+      return;
+    }
+
+    if (!res.ok) return;
+    const payload = await res.json();
+    authState = { user: payload.data.user };
+    setAuthState(authState);
+    updateAuthUi();
+    setTrackingUser(authState.user.id);
+  } catch {
+    // Anonymous browsing does not require an auth session.
+  }
 }
 
 function money(value) {
@@ -298,15 +370,19 @@ function renderCategories() {
   const cats = categories();
   categoryGrid.innerHTML = cats.map((category) => {
     const image = categoryImages[category] || categoryImages[ALL_CATEGORY];
+    const label = category === ALL_CATEGORY ? "Tất cả" : category;
     return `
       <button class="category-card" type="button" data-category="${category}" data-track-name="category_${category}">
-        <span class="category-icon"><img src="${image}" alt="${category}"></span>
-        <strong>${category}</strong>
+        <span class="category-icon"><img src="${image}" alt="${label}"></span>
+        <strong>${label}</strong>
       </button>
     `;
   }).join("");
 
-  categorySelect.innerHTML = cats.map((category) => `<option value="${category}">${category}</option>`).join("");
+  categorySelect.innerHTML = cats
+    .map((category) => `<option value="${category}">${category === ALL_CATEGORY ? "Tất cả" : category}</option>`)
+    .join("");
+  window.setTimeout(() => repairBrokenImages(categoryGrid), 250);
 }
 
 function startFlashCountdown() {
@@ -366,12 +442,14 @@ function renderDeals() {
         </span>
       </button>
     `).join("");
+  window.setTimeout(() => repairBrokenImages(dealRow), 250);
 }
 
 function renderProducts() {
   const visible = filteredProducts();
   resultSummary.textContent = `${visible.length} sản phẩm phù hợp`;
   productGrid.innerHTML = visible.map((product) => productCard(product, false)).join("");
+  window.setTimeout(() => repairBrokenImages(productGrid), 250);
 }
 
 function trackCatalogChanged(eventName) {
@@ -590,7 +668,7 @@ async function completeOrder() {
     method: "POST",
     body: JSON.stringify({
       sessionId: getSessionId(),
-      userId: authState?.user?.id || null,
+      anonymousId: getAnonymousId(),
       paymentMethod
     })
   });
@@ -617,6 +695,55 @@ async function completeOrder() {
   renderCart();
   purchaseCompleted = true;
   checkoutStartedAt = null;
+}
+
+function renderPurchasedProducts(items) {
+  if (!purchasedList) return;
+
+  if (!items.length) {
+    purchasedList.innerHTML = `
+      <div class="empty-state">
+        <strong>Chưa có đơn hàng đã mua</strong>
+        <p class="muted">Các sản phẩm thanh toán thành công sẽ xuất hiện tại đây.</p>
+      </div>
+    `;
+    return;
+  }
+
+  purchasedList.innerHTML = items.map((item) => `
+    <article class="purchased-item">
+      <img src="${item.image || FALLBACK_IMAGE}" alt="${item.name}">
+      <div class="purchased-info">
+        <strong>${item.name}</strong>
+        <p class="muted">Đã mua ${item.totalQuantity} sản phẩm</p>
+        <p class="muted">Gần nhất: ${new Date(item.lastPurchasedAt).toLocaleString("vi-VN")}</p>
+        <p class="order-codes">${item.orderCodes.join(", ")}</p>
+      </div>
+      <button class="secondary-button" type="button" data-repurchase-id="${item.productId}" data-track-name="repurchase_${item.productId}">Mua lại</button>
+    </article>
+  `).join("");
+  window.setTimeout(() => repairBrokenImages(purchasedList), 250);
+}
+
+async function openPurchasedProducts() {
+  if (!authState?.user?.id) {
+    closePanel(authPanel);
+    alert("Vui lòng đăng nhập để xem đơn hàng đã mua.");
+    openPanel(authPanel);
+    return;
+  }
+
+  purchasedList.innerHTML = "<p class=\"muted\">Đang tải đơn hàng...</p>";
+  purchasedSummary.textContent = `Đơn hàng đã mua của ${authState.user.email}.`;
+  openPanel(purchasedPanel);
+  tracker().trackPageView?.("/me/purchased-products");
+
+  try {
+    const response = await apiFetch("/api/me/purchased-products");
+    renderPurchasedProducts(response.data || []);
+  } catch {
+    purchasedList.innerHTML = "<p class=\"muted\">Không thể tải đơn hàng. Vui lòng đăng nhập lại.</p>";
+  }
 }
 
 document.getElementById("searchForm").addEventListener("submit", (event) => {
@@ -797,9 +924,7 @@ window.addEventListener("beforeunload", () => {
 
 async function initializeStore() {
   updateAuthUi();
-  if (authState?.user?.id) {
-    tracker().setUserId(authState.user.id);
-  }
+  await restoreAuthSession();
   await loadStoreData();
   renderCategories();
   renderDeals();
@@ -814,14 +939,42 @@ initializeStore().catch((error) => {
 });
 
 if (accountButton) {
-  accountButton.addEventListener("click", async () => {
-    if (authState?.user?.id) {
-      const shouldLogout = window.confirm(`Đăng xuất tài khoản ${authState.user.name}?`);
-      if (shouldLogout) {
-        await logoutFlow();
-      }
-      return;
-    }
-    await loginFlow();
+  accountButton.addEventListener("click", () => {
+    updateAuthUi();
+    openPanel(authPanel);
   });
 }
+
+authLoginButton?.addEventListener("click", async () => {
+  closePanel(authPanel);
+  await loginFlow();
+});
+
+authRegisterButton?.addEventListener("click", async () => {
+  closePanel(authPanel);
+  await registerFlow();
+});
+
+openPurchasedButton?.addEventListener("click", async () => {
+  await openPurchasedProducts();
+});
+
+refreshPurchasedButton?.addEventListener("click", async () => {
+  await openPurchasedProducts();
+});
+
+purchasedList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-repurchase-id]");
+  if (!button) return;
+
+  await addToCart(button.getAttribute("data-repurchase-id"));
+  closePanel(purchasedPanel);
+  await openCart();
+});
+
+authLogoutButton?.addEventListener("click", async () => {
+  closePanel(authPanel);
+  if (authState?.user?.id) {
+    await logoutFlow();
+  }
+});

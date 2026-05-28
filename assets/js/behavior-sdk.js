@@ -125,6 +125,7 @@ export function createBehaviorSdk(options = {}) {
 
   return {
     setUserId: (id) => { userId = id; },
+    clearUserId: () => { userId = null; },
     newSession: () => { storageSet(SESS_KEY, randomId("sess")); },
     trackPageView: (pageUrl) => send(basePayload("page_view", { page_url: pageUrl })),
     trackProductView: (productId, pageUrl, productMeta = {}) =>

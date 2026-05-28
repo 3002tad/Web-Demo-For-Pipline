@@ -62,6 +62,9 @@
           <div class="header-shop">
             <button class="font-lg icon-list icon-account icon-action" type="button" data-track-name="account_menu"><span>Tài khoản</span></button>
             <button class="font-lg icon-list icon-wishlist icon-action" type="button" data-track-name="wishlist_open"><span>Yêu thích</span><span class="number-item font-xs">5</span></button>
+            <button class="font-lg icon-list icon-orders icon-action" type="button" id="openPurchasedButton" data-track-name="purchased_orders_open">
+              <span>Đơn đã mua</span>
+            </button>
             <button class="font-lg icon-list icon-cart icon-action" type="button" id="openCartButton" data-track-name="open_cart">
               <span>Giỏ hàng</span><span class="number-item font-xs" id="cartCount">0</span>
             </button>
@@ -75,7 +78,7 @@
     <section class="market-hero" data-track-view="market_hero">
       <div class="hero-banner" data-track-view="hero_main_banner">
         <div class="hero-copy">
-          <span class="badge">Mega campaign</span>
+          <span class="badge">Siêu ưu đãi</span>
           <h1>MarketHub</h1>
           <p>Mua sắm nhanh cho mọi nhu cầu hằng ngày, từ đồ công nghệ đến thời trang, voucher và deal sốc theo giờ.</p>
           <a class="primary-button" href="#products" data-track-name="hero_shop_now">Săn deal ngay</a>
@@ -105,7 +108,7 @@
     <section class="panel-card" id="categories" data-track-view="category_section">
       <div class="section-head">
         <div>
-          <span class="section-label">Shop by category</span>
+          <span class="section-label">Danh mục</span>
           <h2>Danh mục nổi bật</h2>
         </div>
         <span class="muted">Chọn danh mục để lọc sản phẩm</span>
@@ -116,7 +119,7 @@
     <section class="panel-card" id="flashSale" data-track-view="flash_sale_section">
       <div class="section-head">
         <div>
-          <span class="section-label">Today deals</span>
+          <span class="section-label">Ưu đãi hôm nay</span>
           <h2>Flash Sale</h2>
         </div>
         <strong class="sale-countdown">Kết thúc trong <span id="flashCountdown">02:18:45</span></strong>
@@ -127,7 +130,7 @@
     <section class="panel-card" data-track-view="voucher_section">
       <div class="section-head">
         <div>
-          <span class="section-label">Coupons</span>
+          <span class="section-label">Voucher</span>
           <h2>Kho voucher</h2>
         </div>
         <span class="muted">Lưu voucher để dùng khi thanh toán</span>
@@ -136,7 +139,7 @@
         <button class="voucher" type="button" data-voucher-code="SHIP0" data-track-name="voucher_ship0"><strong>Freeship 0đ</strong><span class="muted">Đơn từ 99k</span></button>
         <button class="voucher" type="button" data-voucher-code="SALE15" data-track-name="voucher_sale15"><strong>Giảm 15%</strong><span class="muted">Tối đa 80k</span></button>
         <button class="voucher" type="button" data-voucher-code="MALL50" data-track-name="voucher_mall50"><strong>Mall -50k</strong><span class="muted">Đơn từ 500k</span></button>
-        <button class="voucher" type="button" data-voucher-code="NEWUSER" data-track-name="voucher_newuser"><strong>New user</strong><span class="muted">Ưu đãi lần đầu</span></button>
+        <button class="voucher" type="button" data-voucher-code="NEWUSER" data-track-name="voucher_newuser"><strong>Người mới</strong><span class="muted">Ưu đãi lần đầu</span></button>
       </div>
     </section>
 
@@ -177,7 +180,7 @@
         <div class="product-area">
           <div class="sort-row">
             <div>
-              <span class="section-label">Recommended</span>
+              <span class="section-label">Gợi ý</span>
               <h2>Gợi ý hôm nay</h2>
               <p class="muted" id="resultSummary">0 sản phẩm</p>
             </div>
@@ -207,6 +210,40 @@
     <strong id="floatingCartCount">0</strong>
   </button>
 
+  <div class="panel" id="authPanel" aria-hidden="true">
+    <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="panel-header">
+        <strong id="authTitle">Tài khoản</strong>
+        <button class="close-button" type="button" data-close-panel aria-label="Đóng">X</button>
+      </div>
+      <div class="panel-content">
+        <div class="auth-choice">
+          <p class="muted" id="authUserSummary">Đăng nhập hoặc tạo tài khoản để đồng bộ hành vi mua sắm.</p>
+          <div class="auth-actions">
+            <button class="primary-button" type="button" id="authLoginButton" data-track-name="auth_login_open">Đăng nhập</button>
+            <button class="secondary-button" type="button" id="authRegisterButton" data-track-name="auth_register_open">Đăng ký</button>
+            <button class="secondary-button is-hidden" type="button" id="authLogoutButton" data-track-name="auth_logout_open">Đăng xuất</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="purchasedPanel" aria-hidden="true">
+    <div class="modal purchased-modal" role="dialog" aria-modal="true" aria-labelledby="purchasedTitle">
+      <div class="panel-header">
+        <strong id="purchasedTitle">Đơn hàng đã mua</strong>
+        <button class="close-button" type="button" data-close-panel aria-label="Đóng">X</button>
+      </div>
+      <div class="panel-content">
+        <div class="purchased-toolbar">
+          <p class="muted" id="purchasedSummary">Các sản phẩm đã thanh toán bằng tài khoản hiện tại.</p>
+          <button class="secondary-button" type="button" id="refreshPurchasedButton" data-track-name="purchased_orders_refresh">Tải lại</button>
+        </div>
+        <div class="purchased-list" id="purchasedList"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="panel" id="detailPanel" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
       <div class="panel-header">
@@ -226,7 +263,7 @@
       <div class="panel-content" id="cartItems"></div>
       <div class="panel-footer">
         <strong>Tổng: <span id="cartTotal">0đ</span></strong>
-        <button class="primary-button" type="button" id="checkoutButton" data-track-name="checkout_start">Checkout</button>
+        <button class="primary-button" type="button" id="checkoutButton" data-track-name="checkout_start">Thanh toán</button>
       </div>
     </aside>
   </div>

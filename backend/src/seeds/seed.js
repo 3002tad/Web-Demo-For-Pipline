@@ -10,6 +10,7 @@ const TrackingDebugEvent = require("../modules/tracking/tracking-debug.model");
 const seedCategories = require("./seed-categories");
 const seedSuppliers = require("./seed-suppliers");
 const seedProducts = require("./seed-products");
+const seedUsers = require("./seed-users");
 
 const rootDir = path.resolve(__dirname, "../../..");
 
@@ -40,10 +41,12 @@ async function runSeed() {
   const savedCategories = await seedCategories(categories);
   const savedSuppliers = await seedSuppliers(suppliers);
   const savedProducts = await seedProducts(products, savedCategories, savedSuppliers, 500);
+  const savedUsers = await seedUsers();
 
   console.log(`Seeded ${savedCategories.length} categories`);
   console.log(`Seeded ${savedSuppliers.size} suppliers`);
   console.log(`Seeded ${savedProducts.length} products`);
+  console.log(`Seeded ${savedUsers.length} demo users`);
 }
 
 runSeed()

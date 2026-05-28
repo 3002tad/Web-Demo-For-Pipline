@@ -3,7 +3,7 @@ const response = require("../../common/utils/response");
 const orderService = require("./order.service");
 
 const createOrder = asyncHandler(async (req, res) => {
-  response.created(res, await orderService.createOrder(req.body));
+  response.created(res, await orderService.createOrder(req.body, req.user));
 });
 
 const getOrder = asyncHandler(async (req, res) => {

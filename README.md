@@ -22,16 +22,16 @@ Default `.env` values:
 
 ```env
 PORT=3000
+NODE_ENV=development
+CLIENT_ORIGIN=http://localhost:3000
 MONGO_URI=mongodb://localhost:27017/markethub_demo
-TRACKING_FORWARD_URL=http://lap1:31000/track
+TRACKING_FORWARD_URL=http://lap1.bigdata.ts.net:31000/track
 TRACKING_DEBUG_STORE=true
-JWT_ACCESS_SECRET=change-me-access-secret
-JWT_REFRESH_SECRET=change-me-refresh-secret
-JWT_ACCESS_EXPIRES=15m
-JWT_REFRESH_EXPIRES=7d
-AUTH_COOKIE_NAME=markethub_refresh_token
-AUTH_COOKIE_SECURE=false
-AUTH_COOKIE_SAMESITE=lax
+JWT_SECRET=change-me-demo-secret
+JWT_EXPIRES_IN=7d
+AUTH_COOKIE_NAME=markethub_token
+COOKIE_SECURE=false
+COOKIE_SAME_SITE=lax
 ```
 
 ## Run MongoDB
@@ -51,6 +51,38 @@ npm run seed
 ```
 
 The seed script clears demo collections for products, categories, suppliers, carts, demo orders, and tracking debug events, then reloads data from `data/products.json`, `data/categories.json`, and `data/suppliers.json`.
+It also upserts demo users in the MongoDB `users` collection, so running it again does not duplicate emails.
+
+To seed only auth users:
+
+```bash
+npm run seed:users
+```
+
+Demo accounts:
+
+- `demo1@example.com` / `123456`
+- `demo2@example.com` / `123456`
+- `admin@example.com` / `123456`
+
+## Clean MongoDB
+
+The clean script requires an explicit confirmation environment variable before deleting data.
+
+```powershell
+$env:CLEAN_MONGODB_CONFIRM="yes"; .\scripts\clean-mongodb.bat
+```
+
+Default scope is `runtime`, which deletes carts, demo orders, and tracking debug events.
+
+Other scopes:
+
+```powershell
+$env:CLEAN_MONGODB_CONFIRM="yes"; $env:CLEAN_MONGODB_SCOPE="demo"; .\scripts\clean-mongodb.bat
+$env:CLEAN_MONGODB_CONFIRM="yes"; $env:CLEAN_MONGODB_SCOPE="all"; .\scripts\clean-mongodb.bat
+```
+
+`demo` deletes product/category/supplier/user data plus runtime data. `all` drops the whole database from `MONGO_URI`.
 
 The backend seed expands the catalog to **500 products** with a balanced mix:
 - 70% long-tail
@@ -86,10 +118,10 @@ http://localhost:3000
 - `DELETE /api/cart?sessionId=...`
 - `POST /api/orders`
 - `GET /api/orders/:orderCode`
+- `GET /api/me/purchased-products`
 - `POST /track`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 
@@ -111,3 +143,13 @@ The tracking SDK output is not reformatted. Existing event fields remain the sam
 Existing public functions remain available through `window.tracking`, including `trackPageView`, `trackProductView`, `trackProductClick`, `trackSearch`, `trackFilterApply`, `trackScrollDepth`, `trackCustom`, and `initAutoPageView`.
 
 Existing event names are preserved: `page_view`, `scroll_depth`, `search`, `filter_apply`, `product_click`, `product_view`, `add_to_cart`, `checkout_start`, `purchase_succeeded`, `banner_impression`, and `banner_click`.
+
+Anonymous visitors are tracked only in the browser through `anonymous_id` and `session_id`; no anonymous user document is created in MongoDB. After login, `/api/auth/login` verifies the MongoDB user and sets JWT cookies with `HttpOnly`. The frontend stores only the public user object, calls `window.tracking.setUserId(user.id)`, and events emitted after login include `user_id`.
+
+Logout calls `/api/auth/logout`, clears only the auth cookie/frontend user state, and calls `window.tracking.clearUserId()`. It does not reset the tracking `anonymous_id`, `session_id`, or local tracking storage. The SDK public API and payload output remain unchanged; only the optional helper `clearUserId()` was added next to the existing `setUserId()`.
+
+## Auth Model
+
+Auth uses a single JWT stored in an HttpOnly cookie named by `AUTH_COOKIE_NAME`. The frontend uses `credentials: "include"` for auth requests and never stores the JWT in `localStorage`.
+
+Guest users can browse, search, filter, view products, and add to cart using the tracking/browser session id. Checkout keeps the guest cart behavior, and when a valid auth cookie is present the backend attaches `userId` to the created demo order. The purchased-products API requires login and queries orders by JWT user id, not by tracking `session_id`.

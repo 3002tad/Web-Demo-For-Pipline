@@ -11,6 +11,7 @@ function normalizeOrder(order) {
   return {
     orderCode: order.orderCode,
     sessionId: order.sessionId,
+    anonymousId: order.anonymousId,
     userId: order.userId,
     items: order.items,
     totalAmount: order.totalAmount,
@@ -21,7 +22,7 @@ function normalizeOrder(order) {
   };
 }
 
-async function createOrder({ sessionId, userId = null, paymentMethod = "cod" }) {
+async function createOrder({ sessionId, anonymousId = null, paymentMethod = "cod" }, authUser = null) {
   if (!sessionId) {
     const error = new Error("sessionId is required");
     error.statusCode = 400;
@@ -40,13 +41,15 @@ async function createOrder({ sessionId, userId = null, paymentMethod = "cod" }) 
     name: item.nameSnapshot,
     price: item.priceSnapshot,
     quantity: item.quantity,
-    amount: item.priceSnapshot * item.quantity
+    amount: item.priceSnapshot * item.quantity,
+    image: item.imageSnapshot || ""
   }));
 
   const order = await orderRepository.create({
     orderCode: createOrderCode(),
     sessionId,
-    userId,
+    anonymousId,
+    userId: authUser?.id || null,
     items,
     totalAmount: items.reduce((total, item) => total + item.amount, 0),
     paymentMethod,
@@ -70,4 +73,41 @@ async function getOrder(orderCode) {
   return normalizeOrder(order);
 }
 
-module.exports = { createOrder, getOrder };
+async function getPurchasedProducts(userId) {
+  if (!userId) {
+    const error = new Error("Unauthorized");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const orders = await orderRepository.findCompletedByUserId(userId);
+  const grouped = new Map();
+
+  for (const order of orders) {
+    for (const item of order.items) {
+      const current = grouped.get(item.productId) || {
+        productId: item.productId,
+        name: item.name,
+        image: item.image || "",
+        lastPurchasedAt: order.createdAt,
+        totalQuantity: 0,
+        orderCodes: []
+      };
+
+      current.totalQuantity += item.quantity;
+      if (!current.orderCodes.includes(order.orderCode)) {
+        current.orderCodes.push(order.orderCode);
+      }
+      if (new Date(order.createdAt) > new Date(current.lastPurchasedAt)) {
+        current.lastPurchasedAt = order.createdAt;
+        current.name = item.name;
+        current.image = item.image || current.image;
+      }
+      grouped.set(item.productId, current);
+    }
+  }
+
+  return Array.from(grouped.values());
+}
+
+module.exports = { createOrder, getOrder, getPurchasedProducts };
