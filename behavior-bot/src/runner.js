@@ -12,6 +12,8 @@ function aggregate(summaries) {
     total.trackResponses += item.trackResponses;
     total.searches += item.searches;
     total.filters += item.filters;
+    total.bannerViews += item.bannerViews;
+    total.bannerClicks += item.bannerClicks;
     total.productViews += item.productViews;
     total.addToCart += item.addToCart;
     total.checkoutStarts += item.checkoutStarts;
@@ -26,6 +28,8 @@ function aggregate(summaries) {
     trackResponses: 0,
     searches: 0,
     filters: 0,
+    bannerViews: 0,
+    bannerClicks: 0,
     productViews: 0,
     addToCart: 0,
     checkoutStarts: 0,

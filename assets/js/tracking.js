@@ -7,21 +7,31 @@ const tracking = createBehaviorSdk({
 });
 
 function readableTarget(element) {
-  const target = element.closest("[data-track-name]") || element;
+  const target = element.closest("[data-track-banner], [data-track-name]") || element;
 
   return {
     tag: target.tagName ? target.tagName.toLowerCase() : null,
     id: target.id || null,
+    bannerName: target.getAttribute("data-track-banner") || null,
     trackName: target.getAttribute("data-track-name") || null,
     text: (target.innerText || target.getAttribute("aria-label") || "").trim().slice(0, 120),
   };
 }
 
+function bannerPayload(element) {
+  const bannerName = element.getAttribute("data-track-banner") || element.id || null;
+  return {
+    banner_id: element.getAttribute("data-banner-id") || bannerName,
+    name: bannerName,
+  };
+}
+
 function initClickTracking() {
   document.addEventListener("click", (event) => {
-    const tracked = event.target.closest("[data-track-name]");
-    if (!tracked) return;
+    const banner = event.target.closest("[data-track-banner]");
+    if (!banner) return;
 
+    const tracked = event.target.closest("[data-track-name]") || banner;
     const trackName = tracked.getAttribute("data-track-name") || "";
     const hasSemanticTracking = tracked.matches("[data-add-id], [data-buy-now-id], [data-detail-id], [data-remove-id]")
       || trackName === "checkout_start"
@@ -37,8 +47,9 @@ function initClickTracking() {
     if (hasSemanticTracking) return;
 
     tracking.trackBannerClick({
-      target: readableTarget(tracked),
-      voucherCode: tracked.getAttribute("data-voucher-code"),
+      ...bannerPayload(banner),
+      target: readableTarget(event.target),
+      voucherCode: banner.getAttribute("data-voucher-code") || event.target.closest("[data-voucher-code]")?.getAttribute("data-voucher-code"),
       x: event.clientX,
       y: event.clientY,
     }).catch(() => {});
@@ -53,12 +64,12 @@ function initViewTracking() {
     entries.forEach((entry) => {
       if (!entry.isIntersecting || entry.intersectionRatio < 0.5) return;
 
-      const name = entry.target.getAttribute("data-track-view") || entry.target.id;
+      const name = entry.target.getAttribute("data-track-banner") || entry.target.id;
       if (!name || seen.has(name)) return;
 
       seen.add(name);
       tracking.trackBannerImpression({
-        name,
+        ...bannerPayload(entry.target),
         id: entry.target.id || null,
         visibleRatio: Number(entry.intersectionRatio.toFixed(2)),
       }).catch(() => {});
@@ -66,8 +77,8 @@ function initViewTracking() {
   }, { threshold: [0.5, 0.75] });
 
   const observe = (root = document) => {
-    root.querySelectorAll("[data-track-view]").forEach((element) => {
-      const name = element.getAttribute("data-track-view") || element.id;
+    root.querySelectorAll("[data-track-banner]").forEach((element) => {
+      const name = element.getAttribute("data-track-banner") || element.id;
       if (!seen.has(name)) observer.observe(element);
     });
   };
@@ -78,7 +89,7 @@ function initViewTracking() {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType !== Node.ELEMENT_NODE) return;
-        if (node.matches?.("[data-track-view]")) observer.observe(node);
+        if (node.matches?.("[data-track-banner]")) observer.observe(node);
         observe(node);
       });
     });

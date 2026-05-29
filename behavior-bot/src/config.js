@@ -36,6 +36,8 @@ module.exports = {
   searchRate: numberOption("--search-rate", "BOT_SEARCH_RATE", 0.65),
   filterRate: numberOption("--filter-rate", "BOT_FILTER_RATE", 0.4),
   productViewRate: numberOption("--product-view-rate", "BOT_PRODUCT_VIEW_RATE", 0.8),
+  bannerViewRate: numberOption("--banner-view-rate", "BOT_BANNER_VIEW_RATE", 0.55),
+  bannerClickRate: numberOption("--banner-click-rate", "BOT_BANNER_CLICK_RATE", 0.18),
   addToCartRate: numberOption("--add-to-cart-rate", "BOT_ADD_TO_CART_RATE", 0.35),
   checkoutStartRate: numberOption("--checkout-start-rate", "BOT_CHECKOUT_START_RATE", 0.2),
   purchaseRate: numberOption("--purchase-rate", "BOT_PURCHASE_RATE", 0.12),

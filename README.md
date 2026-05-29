@@ -137,7 +137,7 @@ Useful overrides:
 npm run bot -- --users 50 --concurrency 5 --purchase-rate 0.12
 ```
 
-Bot ratios are controlled by `BOT_*` variables in `.env`, including `BOT_LOGIN_RATE`, `BOT_SEARCH_RATE`, `BOT_FILTER_RATE`, `BOT_ADD_TO_CART_RATE`, `BOT_CHECKOUT_START_RATE`, and `BOT_PURCHASE_RATE`.
+Bot ratios are controlled by `BOT_*` variables in `.env`, including `BOT_LOGIN_RATE`, `BOT_SEARCH_RATE`, `BOT_FILTER_RATE`, `BOT_BANNER_VIEW_RATE`, `BOT_BANNER_CLICK_RATE`, `BOT_ADD_TO_CART_RATE`, `BOT_CHECKOUT_START_RATE`, and `BOT_PURCHASE_RATE`.
 
 ## API Endpoints
 

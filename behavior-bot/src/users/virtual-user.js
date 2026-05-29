@@ -2,6 +2,7 @@ const { maybeLogin } = require("../scenarios/auth.scenario");
 const { browse } = require("../scenarios/browse.scenario");
 const { search } = require("../scenarios/search.scenario");
 const { applyFilter } = require("../scenarios/filter.scenario");
+const { interactWithBanner } = require("../scenarios/banner.scenario");
 const { viewProduct, addToCart, closeDetailIfOpen } = require("../scenarios/product.scenario");
 const { checkout } = require("../scenarios/checkout.scenario");
 
@@ -16,6 +17,8 @@ function createSummary(userId, persona) {
     searches: 0,
     keywords: {},
     filters: 0,
+    bannerViews: 0,
+    bannerClicks: 0,
     productViews: 0,
     addToCart: 0,
     checkoutStarts: 0,
@@ -46,6 +49,7 @@ async function runVirtualUser(browser, config, userId) {
     await page.waitForSelector("#productGrid article, #productGrid .product-card", { timeout: 20000 });
 
     await maybeLogin(page, config, summary).catch(() => {});
+    await interactWithBanner(page, config, summary);
     await browse(page, config, summary);
     await search(page, config, summary);
     await applyFilter(page, config, summary);

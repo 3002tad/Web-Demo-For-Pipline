@@ -76,23 +76,42 @@
 
   <main>
     <section class="market-hero" data-track-view="market_hero">
-      <div class="hero-banner" data-track-view="hero_main_banner">
+      <div class="hero-banner" data-track-banner="hero_main_banner" data-banner-id="hero_main_banner">
         <div class="hero-copy">
-          <span class="badge">Siêu ưu đãi</span>
-          <h1>MarketHub</h1>
-          <p>Mua sắm nhanh cho mọi nhu cầu hằng ngày, từ đồ công nghệ đến thời trang, voucher và deal sốc theo giờ.</p>
-          <a class="primary-button" href="#products" data-track-name="hero_shop_now">Săn deal ngay</a>
+          <span class="banner-label">Mega campaign</span>
+          <h1>Deal công nghệ & lifestyle</h1>
+          <p>Giảm sâu theo khung giờ, freeship cho đơn từ 99.000đ và voucher độc quyền cho thành viên MarketHub.</p>
+          <div class="banner-metrics" aria-label="Điểm nổi bật">
+            <span><strong>-50%</strong> flash deal</span>
+            <span><strong>0đ</strong> freeship</span>
+            <span><strong>2h</strong> đổi trả</span>
+          </div>
+          <div class="banner-actions">
+            <a class="primary-button" href="#products" data-track-name="hero_shop_now">Săn deal ngay</a>
+            <a class="secondary-button" href="#flashSale" data-track-name="hero_flash_sale">Xem flash sale</a>
+          </div>
         </div>
-        <img src="/template-assets/imgs/page/homepage1/banner.png" alt="MarketHub campaign">
+        <div class="hero-visual">
+          <img src="/template-assets/imgs/page/homepage1/banner.png" alt="MarketHub campaign">
+          <span class="visual-badge">Live sale</span>
+        </div>
       </div>
       <div class="hero-side">
-        <button class="hero-tile" type="button" data-track-name="hero_side_flash" data-track-view="hero_side_flash">
+        <button class="hero-tile" type="button" data-track-name="hero_side_flash" data-track-banner="hero_side_flash" data-banner-id="hero_side_flash">
           <img src="/template-assets/imgs/page/homepage1/banner-small-1.png" alt="">
-          <strong>Flash sale mỗi giờ</strong>
+          <span class="hero-tile-copy">
+            <span>Hôm nay</span>
+            <strong>Flash sale mỗi giờ</strong>
+            <small>Deal mới mở liên tục</small>
+          </span>
         </button>
-        <button class="hero-tile" type="button" data-track-name="hero_side_voucher" data-track-view="hero_side_voucher">
+        <button class="hero-tile" type="button" data-track-name="hero_side_voucher" data-track-banner="hero_side_voucher" data-banner-id="hero_side_voucher">
           <img src="/template-assets/imgs/page/homepage1/banner-small-2.png" alt="">
-          <strong>Voucher freeship</strong>
+          <span class="hero-tile-copy">
+            <span>Mã nổi bật</span>
+            <strong>Voucher freeship</strong>
+            <small>Áp dụng từ 99.000đ</small>
+          </span>
         </button>
       </div>
     </section>
@@ -136,10 +155,10 @@
         <span class="muted">Lưu voucher để dùng khi thanh toán</span>
       </div>
       <div class="voucher-row">
-        <button class="voucher" type="button" data-voucher-code="SHIP0" data-track-name="voucher_ship0"><strong>Freeship 0đ</strong><span class="muted">Đơn từ 99k</span></button>
-        <button class="voucher" type="button" data-voucher-code="SALE15" data-track-name="voucher_sale15"><strong>Giảm 15%</strong><span class="muted">Tối đa 80k</span></button>
-        <button class="voucher" type="button" data-voucher-code="MALL50" data-track-name="voucher_mall50"><strong>Mall -50k</strong><span class="muted">Đơn từ 500k</span></button>
-        <button class="voucher" type="button" data-voucher-code="NEWUSER" data-track-name="voucher_newuser"><strong>Người mới</strong><span class="muted">Ưu đãi lần đầu</span></button>
+        <button class="voucher" type="button" data-voucher-code="SHIP0" data-track-name="voucher_ship0" data-track-banner="voucher_ship0" data-banner-id="voucher_ship0"><span class="voucher-code">SHIP0</span><strong>Freeship 0đ</strong><span class="muted">Đơn từ 99k</span></button>
+        <button class="voucher" type="button" data-voucher-code="SALE15" data-track-name="voucher_sale15" data-track-banner="voucher_sale15" data-banner-id="voucher_sale15"><span class="voucher-code">SALE15</span><strong>Giảm 15%</strong><span class="muted">Tối đa 80k</span></button>
+        <button class="voucher" type="button" data-voucher-code="MALL50" data-track-name="voucher_mall50" data-track-banner="voucher_mall50" data-banner-id="voucher_mall50"><span class="voucher-code">MALL50</span><strong>Mall -50k</strong><span class="muted">Đơn từ 500k</span></button>
+        <button class="voucher" type="button" data-voucher-code="NEWUSER" data-track-name="voucher_newuser" data-track-banner="voucher_newuser" data-banner-id="voucher_newuser"><span class="voucher-code">NEWUSER</span><strong>Người mới</strong><span class="muted">Ưu đãi lần đầu</span></button>
       </div>
     </section>
 
