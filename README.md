@@ -64,7 +64,9 @@ Demo accounts:
 
 - `demo1@example.com` / `123456`
 - `demo2@example.com` / `123456`
-- `admin@example.com` / `123456`
+- `demo3@example.com` / `123456`
+- `demo4@example.com` / `123456`
+- `demo5@example.com` / `123456`
 
 ## Clean MongoDB
 
@@ -105,6 +107,37 @@ http://localhost:3000
 ```
 
 `node server.js` also starts the new Express backend.
+
+## Behavior Bot
+
+The behavior bot uses Playwright with local Microsoft Edge to simulate real users through the UI. It does not call tracking APIs directly; the browser SDK emits events naturally.
+
+Run Web Demo first:
+
+```bash
+npm run dev
+```
+
+For checkout/revenue data, also run:
+
+```bash
+npm run worker
+npm run adapter
+```
+
+Then run the bot:
+
+```bash
+npm run bot
+```
+
+Useful overrides:
+
+```bash
+npm run bot -- --users 50 --concurrency 5 --purchase-rate 0.12
+```
+
+Bot ratios are controlled by `BOT_*` variables in `.env`, including `BOT_LOGIN_RATE`, `BOT_SEARCH_RATE`, `BOT_FILTER_RATE`, `BOT_ADD_TO_CART_RATE`, `BOT_CHECKOUT_START_RATE`, and `BOT_PURCHASE_RATE`.
 
 ## API Endpoints
 

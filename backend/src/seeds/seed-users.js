@@ -17,10 +17,22 @@ const demoUsers = [
     role: "customer"
   },
   {
-    email: "admin@example.com",
+    email: "demo3@example.com",
     password: "123456",
-    name: "Demo Admin",
-    role: "admin"
+    name: "Demo User 3",
+    role: "customer"
+  },
+  {
+    email: "demo4@example.com",
+    password: "123456",
+    name: "Demo User 4",
+    role: "customer"
+  },
+  {
+    email: "demo5@example.com",
+    password: "123456",
+    name: "Demo User 5",
+    role: "customer"
   }
 ];
 

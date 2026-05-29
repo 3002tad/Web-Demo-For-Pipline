@@ -1,0 +1,10 @@
+{
+  "name": "markethub-behavior-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright behavior bot for generating MarketHub demo user behavior data.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}
