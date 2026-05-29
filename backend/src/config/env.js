@@ -29,6 +29,9 @@ const env = {
   rabbitmqOrderBindingKey: process.env.RABBITMQ_ORDER_BINDING_KEY || "order.created",
   rabbitmqDlx: process.env.RABBITMQ_DLX || "ecommerce.events.dlx",
   rabbitmqOrderDlq: process.env.RABBITMQ_ORDER_DLQ || "webdemo.order-processing.dlq",
+  rabbitmqManageLocal: process.env.RABBITMQ_MANAGE_LOCAL === "true",
+  rabbitmqEmbedWorker: process.env.RABBITMQ_EMBED_WORKER === "true",
+  rabbitmqPublishConfirmTimeoutMs: Number(process.env.RABBITMQ_PUBLISH_CONFIRM_TIMEOUT_MS || 3000),
 };
 
 if (!env.jwtSecret) {

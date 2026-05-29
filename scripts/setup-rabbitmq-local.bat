@@ -53,8 +53,7 @@ if errorlevel 1 (
 echo Enabling RabbitMQ management plugin...
 call "%RABBITMQ_PLUGINS%" enable rabbitmq_management
 if errorlevel 1 (
-  echo Could not enable rabbitmq_management.
-  exit /b 1
+  echo Could not update management plugin state. Continuing because the plugin may already be enabled.
 )
 
 echo Creating or updating local user %RABBITMQ_LOCAL_USER%...

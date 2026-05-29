@@ -1,7 +1,17 @@
 const { connectRabbitMQ } = require("./rabbitmq.connection");
 const constants = require("./rabbitmq.constants");
+const env = require("../../config/env");
 
 let publisherChannel = null;
+
+function withTimeout(promise, timeoutMs, label) {
+  return Promise.race([
+    promise,
+    new Promise((resolve, reject) => {
+      setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+    })
+  ]);
+}
 
 async function getPublisherChannel() {
   if (publisherChannel) return publisherChannel;
@@ -28,8 +38,17 @@ async function publishEvent(routingKey, event) {
     messageId: event.event_id,
     timestamp: Date.now()
   });
-  await channel.waitForConfirms();
+  await withTimeout(
+    channel.waitForConfirms(),
+    env.rabbitmqPublishConfirmTimeoutMs,
+    "RabbitMQ publish confirm"
+  );
   console.log(`RabbitMQ published ${routingKey}: ${event.event_id}`);
 }
 
-module.exports = { publishEvent };
+async function initializePublisher() {
+  await getPublisherChannel();
+  console.log("RabbitMQ publisher is ready");
+}
+
+module.exports = { publishEvent, initializePublisher };

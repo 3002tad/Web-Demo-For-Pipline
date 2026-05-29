@@ -16,6 +16,7 @@ let ratingMode = "all";
 let sortMode = "featured";
 let checkoutStartedAt = null;
 let purchaseCompleted = false;
+let cartFeedbackTimer = null;
 
 const categoryGrid = document.getElementById("categoryGrid");
 const categorySelect = document.getElementById("categorySelect");
@@ -594,6 +595,7 @@ async function addToCart(productId) {
   });
   syncCart(response.data);
   renderCart();
+  showCartFeedback("Đã thêm vào giỏ");
 
   const current = cart.get(productId);
   tracker().trackCustom("add_to_cart", {
@@ -618,6 +620,23 @@ function cartValue() {
 
 function cartSize() {
   return Array.from(cart.values()).reduce((total, item) => total + item.quantity, 0);
+}
+
+function showCartFeedback(message) {
+  if (!floatingCartButton) return;
+  floatingCartButton.setAttribute("data-feedback", message);
+  floatingCartButton.classList.add("has-feedback");
+  window.clearTimeout(cartFeedbackTimer);
+  cartFeedbackTimer = window.setTimeout(() => {
+    floatingCartButton.classList.remove("has-feedback");
+    floatingCartButton.removeAttribute("data-feedback");
+  }, 1800);
+}
+
+function showCheckoutStatus(message, type = "success") {
+  successBox.textContent = message;
+  successBox.classList.toggle("is-error", type === "error");
+  successBox.classList.add("show");
 }
 
 function renderCart() {
@@ -673,8 +692,7 @@ async function completeOrder() {
     })
   });
   const order = response.data;
-  successBox.textContent = `Đã tạo đơn ${order.orderCode}. Trạng thái: ${order.status}. Hệ thống đang xử lý đơn hàng.`;
-  successBox.classList.add("show");
+  showCheckoutStatus(`Đã tạo đơn ${order.orderCode}. Trạng thái: ${order.status}. Hệ thống đang xử lý đơn hàng.`);
   pollOrderStatus(order.orderCode).catch(() => {});
 
   items.forEach((item) => {
@@ -704,7 +722,7 @@ async function pollOrderStatus(orderCode) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const response = await apiFetch(`/api/orders/${encodeURIComponent(orderCode)}`);
     const order = response.data;
-    successBox.textContent = `Đơn ${order.orderCode}: ${order.status}.`;
+    showCheckoutStatus(`Đơn ${order.orderCode}: ${order.status}.`, order.status === "failed" ? "error" : "success");
     if (["completed", "failed", "cancelled"].includes(order.status)) return order;
   }
   return null;
@@ -853,11 +871,42 @@ document.body.addEventListener("click", async (event) => {
   }
 
   if (addButton) {
-    await addToCart(addButton.getAttribute("data-add-id"));
+    const originalText = addButton.textContent;
+    addButton.disabled = true;
+    addButton.textContent = "Đang thêm";
+    try {
+      await addToCart(addButton.getAttribute("data-add-id"));
+      addButton.textContent = "Đã thêm";
+      window.setTimeout(() => {
+        addButton.textContent = originalText;
+      }, 900);
+    } catch (error) {
+      showCartFeedback("Không thể thêm giỏ");
+      addButton.textContent = originalText;
+      console.error(error);
+    } finally {
+      window.setTimeout(() => {
+        addButton.disabled = false;
+      }, 300);
+    }
   }
 
   if (buyNowButton) {
-    await buyNow(buyNowButton.getAttribute("data-buy-now-id"));
+    const originalText = buyNowButton.textContent;
+    buyNowButton.disabled = true;
+    buyNowButton.textContent = "Đang mở";
+    try {
+      await buyNow(buyNowButton.getAttribute("data-buy-now-id"));
+    } catch (error) {
+      showCartFeedback("Không thể mua ngay");
+      buyNowButton.textContent = originalText;
+      console.error(error);
+    } finally {
+      buyNowButton.disabled = false;
+      if (document.body.contains(buyNowButton)) {
+        buyNowButton.textContent = originalText;
+      }
+    }
   }
 
   if (removeButton) {
@@ -909,7 +958,13 @@ floatingCartButton.addEventListener("click", () => {
 });
 document.getElementById("checkoutButton").addEventListener("click", startCheckout);
 document.getElementById("completeOrderButton").addEventListener("click", () => {
+  const button = document.getElementById("completeOrderButton");
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Đang đặt hàng";
+  showCheckoutStatus("Đang gửi đơn hàng...");
   completeOrder().catch((error) => {
+    showCheckoutStatus("Không thể đặt hàng. Vui lòng kiểm tra API/RabbitMQ và thử lại.", "error");
     tracker().trackCustom("payment_failed", {
       metadata: {
         reason: error?.message || "checkout_error",
@@ -919,6 +974,9 @@ document.getElementById("completeOrderButton").addEventListener("click", () => {
       }
     }).catch(() => {});
     console.error(error);
+  }).finally(() => {
+    button.disabled = false;
+    button.textContent = originalText;
   });
 });
 

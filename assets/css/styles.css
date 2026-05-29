@@ -1109,6 +1109,28 @@ h2 {
   display: block;
 }
 
+.success-box.is-error {
+  border-color: #f3b4aa;
+  color: #7f1d1d;
+  background: #fff1f0;
+}
+
+.floating-cart-button.has-feedback::after {
+  content: attr(data-feedback);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: max-content;
+  padding: 8px 10px;
+  border: 1px solid #cdd6e6;
+  border-radius: 6px;
+  color: var(--mh-brand);
+  background: #fff;
+  box-shadow: var(--mh-shadow);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
 footer {
   padding: 28px;
   color: var(--mh-muted);

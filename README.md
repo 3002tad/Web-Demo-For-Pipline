@@ -215,6 +215,30 @@ npm run dev
 npm run worker
 ```
 
+For local Windows development, set:
+
+```env
+RABBITMQ_MANAGE_LOCAL=true
+```
+
+With this enabled, `backend/src/server.js` starts local RabbitMQ before the API listens, and stops local RabbitMQ when the Node server receives Ctrl+C/SIGINT or SIGTERM. This is intended for a single-machine demo setup; keep it `false` on shared servers or when RabbitMQ is managed externally.
+
+For the simplest local demo, also set:
+
+```env
+RABBITMQ_EMBED_WORKER=true
+```
+
+With this enabled, `npm run dev` starts the order-processing consumer inside the API process. Keep it `false` when you want logs to appear in a separate `npm run worker` terminal. If both embedded worker and `npm run worker` run at the same time, RabbitMQ will load-balance messages between the two consumers, so the separate worker terminal may not show every order log.
+
+Worker processing delay can be controlled with:
+
+```env
+ORDER_PROCESSING_STEP_DELAY_MS=0
+```
+
+Use `0` for fast local demos, or a small value such as `150` to make each state transition easier to observe.
+
 Checkout flow:
 
 1. Frontend calls `POST /api/orders` with `sessionId` and `anonymousId`.

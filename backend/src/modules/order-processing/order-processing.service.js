@@ -8,6 +8,8 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const STEP_DELAY_MS = Number(process.env.ORDER_PROCESSING_STEP_DELAY_MS || 0);
+
 async function setOrderStatus(orderCode, status) {
   const order = await orderRepository.updateStatusByOrderCode(orderCode, status);
   if (!order) {
@@ -35,6 +37,7 @@ async function processOrderCreated(event) {
   }
 
   const orderCode = event.order_id;
+  console.log(`[order-processing] received ${event.event_type} for ${orderCode}`);
   const order = await orderRepository.findByOrderCode(orderCode);
   if (!order) {
     throw new Error(`Order not found: ${orderCode}`);
@@ -48,14 +51,16 @@ async function processOrderCreated(event) {
   let current = order;
 
   if (current.status === "pending") {
+    console.log(`[order-processing] ${orderCode} -> processing`);
     current = await setOrderStatus(orderCode, "processing");
   }
 
-  await delay(150);
+  if (STEP_DELAY_MS > 0) await delay(STEP_DELAY_MS);
 
   if (current.status === "processing") {
     try {
       await reserveInventory(current);
+      console.log(`[order-processing] ${orderCode} -> inventory_reserved`);
       current = await setOrderStatus(orderCode, "inventory_reserved");
       await publishEvent(ROUTING_KEYS.INVENTORY_RESERVED, orderEvents.inventoryReservedEvent(current));
     } catch (error) {
@@ -64,16 +69,18 @@ async function processOrderCreated(event) {
     }
   }
 
-  await delay(150);
+  if (STEP_DELAY_MS > 0) await delay(STEP_DELAY_MS);
 
   if (current.status === "inventory_reserved") {
+    console.log(`[order-processing] ${orderCode} -> paid`);
     current = await setOrderStatus(orderCode, "paid");
     await publishEvent(ROUTING_KEYS.PAYMENT_SUCCEEDED, orderEvents.paymentSucceededEvent(current));
   }
 
-  await delay(150);
+  if (STEP_DELAY_MS > 0) await delay(STEP_DELAY_MS);
 
   if (current.status === "paid") {
+    console.log(`[order-processing] ${orderCode} -> completed`);
     current = await setOrderStatus(orderCode, "completed");
     await publishEvent(ROUTING_KEYS.ORDER_COMPLETED, orderEvents.orderCompletedEvent(current));
   }
