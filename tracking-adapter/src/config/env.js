@@ -25,7 +25,7 @@ const env = {
   rabbitmqAdapterPrefetch: numberFromEnv("RABBITMQ_ADAPTER_PREFETCH", 10),
   rabbitmqDlx: process.env.RABBITMQ_DLX || "ecommerce.events.dlx",
   rabbitmqAdapterDlq: process.env.RABBITMQ_ADAPTER_DLQ || "tracking.adapter.business-events.dlq",
-  trackingIngestUrl: process.env.TRACKING_INGEST_URL || "http://tracking-backend.tailnet-name.ts.net",
+  trackingIngestUrl: process.env.TRACKING_INGEST_URL || "http://lap1.bigdata.ts.net:31000",
   trackingIngestPath: process.env.TRACKING_INGEST_PATH || "/api/ingest/business-events",
   trackingIngestApiKey: process.env.TRACKING_INGEST_API_KEY || "",
   trackingIngestTimeoutMs: numberFromEnv("TRACKING_INGEST_TIMEOUT_MS", 10000),
