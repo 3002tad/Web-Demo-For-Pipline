@@ -21,7 +21,12 @@ const orderSchema = new mongoose.Schema(
     items: { type: [orderItemSchema], default: [] },
     totalAmount: { type: Number, required: true },
     paymentMethod: { type: String, default: "cod" },
-    status: { type: String, default: "succeeded" }
+    status: {
+      type: String,
+      enum: ["pending", "processing", "inventory_reserved", "paid", "completed", "failed", "cancelled", "succeeded"],
+      default: "pending",
+      index: true
+    }
   },
   { timestamps: true }
 );

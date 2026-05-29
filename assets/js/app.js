@@ -673,6 +673,9 @@ async function completeOrder() {
     })
   });
   const order = response.data;
+  successBox.textContent = `Đã tạo đơn ${order.orderCode}. Trạng thái: ${order.status}. Hệ thống đang xử lý đơn hàng.`;
+  successBox.classList.add("show");
+  pollOrderStatus(order.orderCode).catch(() => {});
 
   items.forEach((item) => {
     tracker().trackCustom("purchase_succeeded", {
@@ -690,11 +693,21 @@ async function completeOrder() {
     }).catch(() => {});
   });
 
-  successBox.classList.add("show");
   cart.clear();
   renderCart();
   purchaseCompleted = true;
   checkoutStartedAt = null;
+}
+
+async function pollOrderStatus(orderCode) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await apiFetch(`/api/orders/${encodeURIComponent(orderCode)}`);
+    const order = response.data;
+    successBox.textContent = `Đơn ${order.orderCode}: ${order.status}.`;
+    if (["completed", "failed", "cancelled"].includes(order.status)) return order;
+  }
+  return null;
 }
 
 function renderPurchasedProducts(items) {

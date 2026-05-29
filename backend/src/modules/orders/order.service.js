@@ -1,5 +1,9 @@
 const orderRepository = require("./order.repository");
 const cartRepository = require("../carts/cart.repository");
+const productRepository = require("../products/product.repository");
+const { publishEvent } = require("../../infrastructure/rabbitmq/rabbitmq.publisher");
+const { ROUTING_KEYS } = require("../../infrastructure/rabbitmq/rabbitmq.constants");
+const orderEvents = require("./order.events");
 
 function createOrderCode() {
   const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
@@ -36,14 +40,23 @@ async function createOrder({ sessionId, anonymousId = null, paymentMethod = "cod
     throw error;
   }
 
-  const items = cart.items.map((item) => ({
-    productId: item.productId,
-    name: item.nameSnapshot,
-    price: item.priceSnapshot,
-    quantity: item.quantity,
-    amount: item.priceSnapshot * item.quantity,
-    image: item.imageSnapshot || ""
-  }));
+  const items = [];
+  for (const item of cart.items) {
+    const product = await productRepository.findBySku(item.productId);
+    if (!product) {
+      const error = new Error(`Product not found: ${item.productId}`);
+      error.statusCode = 400;
+      throw error;
+    }
+    items.push({
+      productId: product.sku,
+      name: product.name,
+      price: product.price,
+      quantity: item.quantity,
+      amount: product.price * item.quantity,
+      image: product.image || item.imageSnapshot || ""
+    });
+  }
 
   const order = await orderRepository.create({
     orderCode: createOrderCode(),
@@ -53,8 +66,18 @@ async function createOrder({ sessionId, anonymousId = null, paymentMethod = "cod
     items,
     totalAmount: items.reduce((total, item) => total + item.amount, 0),
     paymentMethod,
-    status: "succeeded"
+    status: "pending"
   });
+
+  try {
+    await publishEvent(ROUTING_KEYS.ORDER_CREATED, orderEvents.orderCreatedEvent(order));
+  } catch (error) {
+    console.error(`Order ${order.orderCode} was created but order.created publish failed: ${error.message}`);
+    const publishError = new Error("Order created pending, but RabbitMQ publish failed");
+    publishError.statusCode = 503;
+    publishError.orderCode = order.orderCode;
+    throw publishError;
+  }
 
   cart.items = [];
   await cartRepository.save(cart);

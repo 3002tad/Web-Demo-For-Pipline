@@ -22,6 +22,13 @@ const env = {
   authCookieName: process.env.AUTH_COOKIE_NAME || "markethub_token",
   cookieSecure: process.env.COOKIE_SECURE === "true" || process.env.AUTH_COOKIE_SECURE === "true",
   cookieSameSite: process.env.COOKIE_SAME_SITE || process.env.AUTH_COOKIE_SAMESITE || "lax",
+  rabbitmqUrl: process.env.RABBITMQ_URL || "amqp://markethub:markethub123@localhost:5672",
+  rabbitmqExchange: process.env.RABBITMQ_EXCHANGE || "ecommerce.events",
+  rabbitmqExchangeType: process.env.RABBITMQ_EXCHANGE_TYPE || "topic",
+  rabbitmqOrderQueue: process.env.RABBITMQ_ORDER_QUEUE || "webdemo.order-processing",
+  rabbitmqOrderBindingKey: process.env.RABBITMQ_ORDER_BINDING_KEY || "order.created",
+  rabbitmqDlx: process.env.RABBITMQ_DLX || "ecommerce.events.dlx",
+  rabbitmqOrderDlq: process.env.RABBITMQ_ORDER_DLQ || "webdemo.order-processing.dlq",
 };
 
 if (!env.jwtSecret) {

@@ -6,10 +6,14 @@
   "scripts": {
     "start": "node backend/src/server.js",
     "dev": "nodemon backend/src/server.js",
+    "worker": "node backend/src/worker.js",
+    "rabbitmq:setup": "scripts\\setup-rabbitmq-local.bat",
+    "rabbitmq:check": "scripts\\check-rabbitmq-local.bat",
     "seed": "node backend/src/seeds/seed.js",
     "seed:users": "node backend/src/seeds/seed-users.js"
   },
   "dependencies": {
+    "amqplib": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

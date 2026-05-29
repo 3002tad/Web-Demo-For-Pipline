@@ -21,4 +21,12 @@ async function deleteMany() {
   return Product.deleteMany({});
 }
 
-module.exports = { findAll, findBySku, upsertBySku, deleteMany };
+async function decrementStock(sku, quantity) {
+  return Product.findOneAndUpdate(
+    { sku, stock: { $gte: quantity } },
+    { $inc: { stock: -quantity, sold: quantity } },
+    { new: true }
+  );
+}
+
+module.exports = { findAll, findBySku, upsertBySku, deleteMany, decrementStock };

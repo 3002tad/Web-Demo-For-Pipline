@@ -153,3 +153,97 @@ Logout calls `/api/auth/logout`, clears only the auth cookie/frontend user state
 Auth uses a single JWT stored in an HttpOnly cookie named by `AUTH_COOKIE_NAME`. The frontend uses `credentials: "include"` for auth requests and never stores the JWT in `localStorage`.
 
 Guest users can browse, search, filter, view products, and add to cart using the tracking/browser session id. Checkout keeps the guest cart behavior, and when a valid auth cookie is present the backend attaches `userId` to the created demo order. The purchased-products API requires login and queries orders by JWT user id, not by tracking `session_id`.
+
+## RabbitMQ Integration
+
+RabbitMQ is used only by the backend and worker for server-side business events. The browser never connects to RabbitMQ, and the tracking SDK output is unchanged.
+
+Topology:
+
+- Exchange: `ecommerce.events`
+- Type: `topic`
+- Durable: `true`
+- Web demo queue: `webdemo.order-processing`
+- Web demo binding: `order.created`
+- Tracking backend should create its own queue, for example `tracking.business-events`, and bind `order.*`, `payment.*`, and `inventory.*`. It must not consume `webdemo.order-processing`.
+
+Run RabbitMQ locally on Windows:
+
+1. Install Erlang/OTP and RabbitMQ Server for Windows.
+2. Add RabbitMQ `sbin` to `PATH`, for example:
+
+```text
+C:\Program Files\RabbitMQ Server\rabbitmq_server-<version>\sbin
+```
+
+3. Setup the local user and management plugin:
+
+```powershell
+.\scripts\setup-rabbitmq-local.bat
+```
+
+Check local RabbitMQ status:
+
+```powershell
+.\scripts\check-rabbitmq-local.bat
+```
+
+RabbitMQ UI:
+
+```text
+http://localhost:15672
+```
+
+Local credentials:
+
+```text
+markethub / markethub123
+```
+
+If RabbitMQ was installed as a Windows service and `rabbitmqctl` cannot authenticate because of an Erlang cookie mismatch, the local default account can still be used from localhost:
+
+```env
+RABBITMQ_URL=amqp://guest:guest@localhost:5672
+```
+
+This is suitable for local development only.
+
+Run API and worker in separate terminals:
+
+```bash
+npm run dev
+npm run worker
+```
+
+Checkout flow:
+
+1. Frontend calls `POST /api/orders` with `sessionId` and `anonymousId`.
+2. API validates cart/product data, creates a `pending` order, and publishes `order.created`.
+3. Worker consumes `order.created` from `webdemo.order-processing`.
+4. Worker updates order status and publishes `inventory.reserved`, `payment.succeeded`, and `order.completed`.
+5. Frontend polls `GET /api/orders/:orderCode` to show processing status.
+
+Business event schema:
+
+```json
+{
+  "event_id": "evt_...",
+  "event_type": "order.created",
+  "event_source": "web_demo_api",
+  "occurred_at": "2026-05-29T00:00:00.000Z",
+  "anonymous_id": "anon_xxx",
+  "session_id": "sess_xxx",
+  "user_id": null,
+  "order_id": "ORDER-...",
+  "metadata": {}
+}
+```
+
+Events published by the web demo:
+
+- `order.created`
+- `inventory.reserved`
+- `payment.succeeded`
+- `order.completed`
+
+RabbitMQ messages include `anonymous_id`, `session_id`, `user_id` when logged in, `order_id`, and `metadata.items[].product_id` where relevant. Messages do not include passwords, JWTs, cookies, or real payment details.

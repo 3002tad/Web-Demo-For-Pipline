@@ -15,4 +15,12 @@ async function findCompletedByUserId(userId) {
   }).sort({ createdAt: -1 });
 }
 
-module.exports = { create, findByOrderCode, findCompletedByUserId };
+async function updateStatusByOrderCode(orderCode, status) {
+  return DemoOrder.findOneAndUpdate(
+    { orderCode },
+    { $set: { status } },
+    { new: true }
+  );
+}
+
+module.exports = { create, findByOrderCode, findCompletedByUserId, updateStatusByOrderCode };
