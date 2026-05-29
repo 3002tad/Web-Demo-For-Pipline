@@ -1,0 +1,8 @@
+{
+  "name": "markethub-tracking-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser behavior tracking SDK for the MarketHub demo.",
+  "main": "src/index.js"
+}

@@ -5,7 +5,8 @@ MarketHub is a demo e-commerce web app used to generate browser behavior events 
 ## Architecture
 
 - `index.html`, `assets/css`, `assets/js`: MarketHub frontend.
-- `assets/js/behavior-sdk.js`: existing tracking SDK. Its payload shape and public `window.tracking` API are preserved.
+- `tracking-sdk/src`: behavior tracking SDK module. Its payload shape and public `window.tracking` API are preserved.
+- `assets/js/behavior-sdk.js`: compatibility wrapper that re-exports the SDK module for the existing frontend import path.
 - `backend/src/app.js`: Express app, static frontend serving, API mounting.
 - `backend/src/modules/*`: modular controllers, services, repositories, models.
 - `backend/src/seeds`: seed scripts that read the existing `data/*.json` files.
@@ -139,6 +140,8 @@ API responses use:
 ## Tracking Contract
 
 The tracking SDK output is not reformatted. Existing event fields remain the same, including `event_source`, `event_category`, `event_type`, `anonymous_id`, `session_id`, `user_id`, `page_url`, `timestamp`, `metadata`, and `product_id` for product events.
+
+The SDK implementation now lives in `tracking-sdk/src` and is served by Express at `/tracking-sdk`. The old `/assets/js/behavior-sdk.js` path remains as a wrapper, so the frontend can keep importing the same file while the SDK code is maintained as a standalone module.
 
 Existing public functions remain available through `window.tracking`, including `trackPageView`, `trackProductView`, `trackProductClick`, `trackSearch`, `trackFilterApply`, `trackScrollDepth`, `trackCustom`, and `initAutoPageView`.
 

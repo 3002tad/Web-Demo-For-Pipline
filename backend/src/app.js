@@ -37,6 +37,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 
 app.use("/assets", express.static(path.join(rootDir, "assets"), { etag: false, maxAge: 0 }));
+app.use("/tracking-sdk", express.static(path.join(rootDir, "tracking-sdk"), { etag: false, maxAge: 0 }));
 app.use("/template-assets", express.static(path.join(rootDir, "UI Template", "1.HTML_Template_Frontend_LTR", "assets"), { etag: false, maxAge: 0 }));
 app.use("/data", express.static(path.join(rootDir, "data"), { etag: false, maxAge: 0 }));
 app.use("/input", express.static(path.join(rootDir, "Input"), { etag: false, maxAge: 0 }));
