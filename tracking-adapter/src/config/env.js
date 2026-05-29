@@ -1,8 +1,4 @@
-const path = require("path");
-const dotenv = require("dotenv");
-
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-dotenv.config();
+require("../../../load-env");
 
 function numberFromEnv(name, fallback) {
   const value = process.env[name];

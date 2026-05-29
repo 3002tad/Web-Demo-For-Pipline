@@ -1,6 +1,4 @@
-const dotenv = require("dotenv");
-
-dotenv.config();
+require("../../../load-env");
 
 function requireEnv(name) {
   const value = process.env[name];

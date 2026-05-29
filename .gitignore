@@ -1,5 +1,6 @@
 node_modules/
 .env
+tracking-adapter/.env
 server.out.log
 server.err.log
 .playwright-cli/
