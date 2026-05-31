@@ -6,6 +6,7 @@ const personas = [
       searchRate: 0.35,
       filterRate: 0.2,
       addToCartRate: 0.08,
+      removeFromCartRate: 0.02,
       checkoutStartRate: 0.02,
       purchaseRate: 0
     }
@@ -17,6 +18,7 @@ const personas = [
       searchRate: 0.85,
       filterRate: 0.55,
       addToCartRate: 0.45,
+      removeFromCartRate: 0.1,
       checkoutStartRate: 0.2,
       purchaseRate: 0.08
     }
@@ -29,6 +31,7 @@ const personas = [
       searchRate: 0.75,
       filterRate: 0.45,
       addToCartRate: 0.8,
+      removeFromCartRate: 0.08,
       checkoutStartRate: 0.75,
       purchaseRate: 0.65
     }
@@ -40,6 +43,7 @@ const personas = [
       searchRate: 0.75,
       filterRate: 0.4,
       addToCartRate: 0.85,
+      removeFromCartRate: 0.35,
       checkoutStartRate: 0.8,
       purchaseRate: 0,
       cartAbandonRate: 0.85

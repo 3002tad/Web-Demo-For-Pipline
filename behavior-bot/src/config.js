@@ -39,6 +39,7 @@ module.exports = {
   bannerViewRate: numberOption("--banner-view-rate", "BOT_BANNER_VIEW_RATE", 0.55),
   bannerClickRate: numberOption("--banner-click-rate", "BOT_BANNER_CLICK_RATE", 0.18),
   addToCartRate: numberOption("--add-to-cart-rate", "BOT_ADD_TO_CART_RATE", 0.35),
+  removeFromCartRate: numberOption("--remove-from-cart-rate", "BOT_REMOVE_FROM_CART_RATE", 0.12),
   checkoutStartRate: numberOption("--checkout-start-rate", "BOT_CHECKOUT_START_RATE", 0.2),
   purchaseRate: numberOption("--purchase-rate", "BOT_PURCHASE_RATE", 0.12),
   cartAbandonRate: numberOption("--cart-abandon-rate", "BOT_CART_ABANDON_RATE", 0.08),

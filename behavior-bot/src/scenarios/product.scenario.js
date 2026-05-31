@@ -30,9 +30,27 @@ async function addToCart(page, config, summary) {
   return true;
 }
 
+async function removeFromCart(page, config, summary) {
+  if (!chance(config.removeFromCartRate)) return false;
+
+  const cartCount = Number(await page.locator("#cartCount").innerText().catch(() => "0"));
+  if (!cartCount) return false;
+
+  await closeDetailIfOpen(page);
+  await page.click("#floatingCartButton").catch(() => {});
+  await page.waitForSelector("#cartPanel[aria-hidden=\"false\"]", { timeout: 10000 }).catch(() => {});
+
+  const clicked = await clickRandom(page, "#cartPanel [data-remove-id]");
+  if (!clicked) return false;
+
+  await humanDelay(config);
+  summary.removeFromCart += 1;
+  return true;
+}
+
 async function closeDetailIfOpen(page) {
   const detailOpen = await page.locator("#detailPanel[aria-hidden=\"false\"]").count();
   if (detailOpen) await page.click("#detailPanel [data-close-panel]").catch(() => {});
 }
 
-module.exports = { viewProduct, addToCart, closeDetailIfOpen };
+module.exports = { viewProduct, addToCart, removeFromCart, closeDetailIfOpen };

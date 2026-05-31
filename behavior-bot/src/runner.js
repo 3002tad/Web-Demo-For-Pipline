@@ -16,6 +16,7 @@ function aggregate(summaries) {
     total.bannerClicks += item.bannerClicks;
     total.productViews += item.productViews;
     total.addToCart += item.addToCart;
+    total.removeFromCart += item.removeFromCart;
     total.checkoutStarts += item.checkoutStarts;
     total.purchases += item.purchases;
     total.abandoned += item.abandoned;
@@ -32,6 +33,7 @@ function aggregate(summaries) {
     bannerClicks: 0,
     productViews: 0,
     addToCart: 0,
+    removeFromCart: 0,
     checkoutStarts: 0,
     purchases: 0,
     abandoned: 0,

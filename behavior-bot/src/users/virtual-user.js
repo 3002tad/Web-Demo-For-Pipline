@@ -3,7 +3,7 @@ const { browse } = require("../scenarios/browse.scenario");
 const { search } = require("../scenarios/search.scenario");
 const { applyFilter } = require("../scenarios/filter.scenario");
 const { interactWithBanner } = require("../scenarios/banner.scenario");
-const { viewProduct, addToCart, closeDetailIfOpen } = require("../scenarios/product.scenario");
+const { viewProduct, addToCart, removeFromCart, closeDetailIfOpen } = require("../scenarios/product.scenario");
 const { checkout } = require("../scenarios/checkout.scenario");
 
 function createSummary(userId, persona) {
@@ -21,6 +21,7 @@ function createSummary(userId, persona) {
     bannerClicks: 0,
     productViews: 0,
     addToCart: 0,
+    removeFromCart: 0,
     checkoutStarts: 0,
     purchases: 0,
     abandoned: 0,
@@ -55,6 +56,7 @@ async function runVirtualUser(browser, config, userId) {
     await applyFilter(page, config, summary);
     await viewProduct(page, config, summary);
     await addToCart(page, config, summary);
+    await removeFromCart(page, config, summary);
     await closeDetailIfOpen(page);
     await checkout(page, config, summary);
   } catch (error) {
